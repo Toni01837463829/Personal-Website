@@ -87,6 +87,13 @@ body {
   animation: portal-pull 2.4s cubic-bezier(0.5, 0, 0.75, 0.4) infinite backwards;
 }
 
+/* Endless logo rows in the hero (see components/TechWall.tsx); the track holds two equal halves */
+@keyframes tech-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 /* Custom cursor replaces the system one on mouse devices */
 @media (pointer: fine) {
   html,

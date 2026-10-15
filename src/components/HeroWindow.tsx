@@ -4,7 +4,8 @@ import { hobbies, person, projects } from '../content'
 import { Portal } from './Portal'
 import { HobbyIcon } from './Icons'
 import { GarminHeroVisual } from './GarminShowcase'
-import { BrowserVisual, CodeVisual, DashboardVisual } from './Visuals'
+import { CodingVisual } from './TechWall'
+import { BrowserVisual, DashboardVisual } from './Visuals'
 
 const visuals = {
   browser: BrowserVisual,
@@ -12,14 +13,14 @@ const visuals = {
   garmin: GarminHeroVisual,
 }
 
-// One tab per activity; each shows its project, or the code editor (linking to GitHub) for "Coding".
+// One tab per activity; each shows its project, or the logo wall for "Coding".
 const slides = hobbies.map((h) => {
   const project = projects.find((p) => p.hobby === h.id)
-  return { hobby: h, title: project?.title ?? 'Werkzeuge für die eigenen Hobbys', project }
+  return { hobby: h, title: project?.title ?? 'Sprachen, Frameworks & Datenbanken', project }
 })
 
 function SlideVisual({ project, onOpenChange }: { project?: Project; onOpenChange: (open: boolean) => void }) {
-  if (!project) return <CodeVisual href={person.github} />
+  if (!project) return <CodingVisual github={person.github} />
   if (project.visual === 'portal') {
     // Same height as the other slides, so the window does not jump
     return (
