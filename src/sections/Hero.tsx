@@ -89,7 +89,7 @@ export function Hero() {
                 href="#projekte"
                 className="rounded-full bg-ink px-6 py-3 text-sm text-paper transition-transform hover:-translate-y-0.5"
               >
-                Projekte ansehen
+                Lorem ipsum
               </a>
             </motion.div>
           </Depth>

@@ -10,7 +10,7 @@ import { hobbies, projects } from '../content'
 export function Hobbies() {
   return (
     <section id="hobbys" style={accentVars('hobbys')} className="relative mx-auto max-w-6xl scroll-mt-10 px-6 pt-16 pb-40 md:px-10 md:pt-24 md:pb-56">
-      <SectionTitle index="02" kicker="Hobbys" title="Was mich antreibt" />
+      <SectionTitle index="02" kicker="Hobbys" title="Lorem ipsum dolor" />
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {hobbies.map((h, i) => {

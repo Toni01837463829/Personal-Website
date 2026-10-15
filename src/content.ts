@@ -3,14 +3,14 @@
 
 export const person = {
   name: 'Toni',
-  tagline: 'Ich studiere **AI Solutions** und baue Software für das, was mich begeistert.',
+  tagline: 'Lorem ipsum dolor sit amet, **consectetur** adipiscing elit, sed do eiusmod tempor.',
   github: 'https://github.com/Toni01837463829',
 }
 
 export const about = {
   text: [
-    'Hier steht später ein kurzer Absatz über dich: woher du kommst, was dich antreibt und woran du gerade arbeitest.',
-    'Zwei, drei Sätze reichen. Der Rest der Seite zeigt, **was du machst.**',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Ut enim ad minim veniam, quis nostrud **exercitation ullamco.**',
   ],
   path: [
     { place: 'HTL Krems', detail: 'Ausbildung', years: '' },
@@ -21,10 +21,10 @@ export const about = {
 export type HobbyId = 'triathlon' | 'simracing' | 'coding' | 'feuerwehr'
 
 export const hobbies: { id: HobbyId; name: string; text: string }[] = [
-  { id: 'triathlon', name: 'Triathlon', text: 'Schwimmen, Radfahren, Laufen. Training mit **Daten**, Rennen mit Kopf.' },
-  { id: 'simracing', name: 'Sim-Racing', text: 'Rennen am Simulator und eigene Dashboards, die zeigen, **was zählt.**' },
-  { id: 'coding', name: 'Coding', text: 'Das, was alles andere verbindet: Werkzeuge für die eigenen Hobbys bauen.' },
-  { id: 'feuerwehr', name: 'Freiwillige Feuerwehr', text: 'Im Einsatz, **wenn es darauf ankommt,** und online für die eigene Wehr.' },
+  { id: 'triathlon', name: 'Triathlon', text: 'Lorem ipsum dolor sit amet, **consectetur** adipiscing elit.' },
+  { id: 'simracing', name: 'Sim-Racing', text: 'Sed do eiusmod tempor incididunt ut labore, **et dolore magna.**' },
+  { id: 'coding', name: 'Coding', text: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco.' },
+  { id: 'feuerwehr', name: 'Freiwillige Feuerwehr', text: 'Duis aute irure dolor, **in reprehenderit** in voluptate velit esse.' },
 ]
 
 export const projects: {
