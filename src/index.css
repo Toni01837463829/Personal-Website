@@ -40,6 +40,16 @@ body {
   -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
+
+/* Custom cursor replaces the system one on mouse devices */
+@media (pointer: fine) {
+  html,
+  a,
+  button {
+    cursor: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

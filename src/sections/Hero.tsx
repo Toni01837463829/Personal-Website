@@ -2,6 +2,7 @@ import { motion, useScroll, useTransform } from 'motion/react'
 import { useRef } from 'react'
 import { HeroWindow } from '../components/HeroWindow'
 import { Depth } from '../components/Mouse'
+import { Text3D } from '../components/Text3D'
 import { person } from '../content'
 
 const ease = [0.22, 1, 0.36, 1] as const
@@ -16,58 +17,66 @@ export function Hero() {
     <section ref={ref} id="top" className="relative min-h-[100svh] overflow-hidden">
       <motion.div
         style={{ scale, opacity }}
-        className="mx-auto grid min-h-[100svh] max-w-7xl items-center gap-16 px-6 pt-32 pb-24 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20 lg:pt-24"
+        className="mx-auto grid min-h-[100svh] max-w-6xl items-center gap-16 px-6 pt-32 pb-24 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20 lg:pt-24"
       >
         {/* Left: name and tagline */}
         <div>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease }}
-            className="mb-8 text-xs font-medium tracking-[0.3em] text-mist uppercase"
-          >
-            Persönliche Website
-          </motion.p>
-          <h1 className="text-[min(22vw,9rem)] leading-[0.9] font-semibold tracking-[-0.05em] whitespace-nowrap lg:text-[min(11vw,11rem)]">
-            {person.name.split('').map((ch, i) => (
-              <motion.span
-                key={i}
-                className="inline-block"
-                initial={{ opacity: 0, y: '60%', rotateX: -80 }}
-                animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                transition={{ duration: 1.1, delay: 0.1 + i * 0.08, ease }}
+          <Depth depth={0.3}>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, ease }}
+              className="mb-8 text-xs font-medium tracking-[0.3em] text-mist uppercase"
+            >
+              Persönliche Website
+            </motion.p>
+          </Depth>
+          <Text3D depth={1.6} className="inline-block">
+            <h1 className="text-[min(22vw,9rem)] leading-[0.9] font-semibold tracking-[-0.05em] whitespace-nowrap lg:text-[min(11vw,11rem)]">
+              {person.name.split('').map((ch, i) => (
+                <motion.span
+                  key={i}
+                  className="inline-block"
+                  initial={{ opacity: 0, y: '60%', rotateX: -80 }}
+                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                  transition={{ duration: 1.1, delay: 0.1 + i * 0.08, ease }}
+                >
+                  {ch}
+                </motion.span>
+              ))}
+            </h1>
+          </Text3D>
+          <Text3D depth={0.7} tilt={false}>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.4, ease }}
+              className="mt-10 max-w-md text-lg leading-relaxed text-graphite md:text-xl"
+            >
+              {person.tagline}
+            </motion.p>
+          </Text3D>
+          <Depth depth={1}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.55, ease }}
+              className="mt-12 flex flex-wrap gap-3"
+            >
+              <a
+                href="#projekte"
+                className="rounded-full bg-ink px-6 py-3 text-sm text-paper transition-transform hover:-translate-y-0.5"
               >
-                {ch}
-              </motion.span>
-            ))}
-          </h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.4, ease }}
-            className="mt-10 max-w-md text-lg leading-relaxed text-graphite md:text-xl"
-          >
-            {person.tagline}
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.55, ease }}
-            className="mt-12 flex flex-wrap gap-3"
-          >
-            <a
-              href="#projekte"
-              className="rounded-full bg-ink px-6 py-3 text-sm text-paper transition-transform hover:-translate-y-0.5"
-            >
-              Projekte ansehen
-            </a>
-            <a
-              href="#kontakt"
-              className="glass rounded-full px-6 py-3 text-sm text-ink transition-transform hover:-translate-y-0.5"
-            >
-              Kontakt
-            </a>
-          </motion.div>
+                Projekte ansehen
+              </a>
+              <a
+                href="#kontakt"
+                className="glass rounded-full px-6 py-3 text-sm text-ink transition-transform hover:-translate-y-0.5"
+              >
+                Kontakt
+              </a>
+            </motion.div>
+          </Depth>
         </div>
 
         {/* Right: animated window cycling through activities and projects */}

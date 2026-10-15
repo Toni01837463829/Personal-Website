@@ -1,6 +1,8 @@
 import { motion, useScroll, useTransform } from 'motion/react'
 import { useRef } from 'react'
+import { Depth } from '../components/Mouse'
 import { Reveal } from '../components/Reveal'
+import { Text3D } from '../components/Text3D'
 import { SectionTitle } from '../components/SectionTitle'
 import { TiltCard } from '../components/TiltCard'
 import { BrowserVisual, DashboardVisual, GarminVisual } from '../components/Visuals'
@@ -33,15 +35,21 @@ function ProjectRow({ project, index }: { project: (typeof projects)[number]; in
             <span className="h-px w-8 bg-stone" />
             {hobby?.name}
           </p>
-          <h3 className="text-3xl font-semibold tracking-tight md:text-4xl">{project.title}</h3>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-graphite">{project.text}</p>
-          <div className="mt-8 flex flex-wrap gap-2">
-            {project.tags.map((t) => (
-              <span key={t} className="glass rounded-full px-3.5 py-1 text-sm text-graphite">
-                {t}
-              </span>
-            ))}
-          </div>
+          <Text3D depth={1.1}>
+            <h3 className="text-3xl font-semibold tracking-tight md:text-4xl">{project.title}</h3>
+          </Text3D>
+          <Text3D depth={0.6} tilt={false}>
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-graphite">{project.text}</p>
+          </Text3D>
+          <Depth depth={0.35}>
+            <div className="mt-8 flex flex-wrap gap-2">
+              {project.tags.map((t) => (
+                <span key={t} className="glass rounded-full px-3.5 py-1 text-sm text-graphite">
+                  {t}
+                </span>
+              ))}
+            </div>
+          </Depth>
           {project.link ? (
             <a
               href={project.link}

@@ -1,7 +1,9 @@
 import { motion, useScroll, useSpring } from 'motion/react'
+import { Cursor } from './components/Cursor'
 import { PointerProvider } from './components/Mouse'
 import { Nav } from './components/Nav'
 import { Particles } from './components/Particles'
+import { SectionNav } from './components/SectionNav'
 import { About } from './sections/About'
 import { Contact } from './sections/Contact'
 import { Hero } from './sections/Hero'
@@ -18,6 +20,7 @@ export default function App() {
         <Particles />
         <motion.div style={{ scaleX: progress }} className="fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-ink" />
         <Nav />
+        <SectionNav />
         <main>
           <Hero />
           <About />
@@ -25,6 +28,7 @@ export default function App() {
           <Projects />
           <Contact />
         </main>
+        <Cursor />
       </div>
     </PointerProvider>
   )

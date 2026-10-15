@@ -1,5 +1,6 @@
 import { HobbyIcon } from '../components/Icons'
 import { Reveal } from '../components/Reveal'
+import { Text3D } from '../components/Text3D'
 import { SectionTitle } from '../components/SectionTitle'
 import { TiltCard } from '../components/TiltCard'
 import { hobbies, projects } from '../content'
@@ -20,7 +21,9 @@ export function Hobbies() {
                     <HobbyIcon id={h.id} />
                     <span className="text-xs font-medium text-mist tabular-nums">0{i + 1}</span>
                   </div>
-                  <h3 className="mt-auto pt-14 text-xl font-semibold tracking-tight">{h.name}</h3>
+                  <Text3D depth={0.6} tilt={false} className="mt-auto block pt-14">
+                    <h3 className="text-xl font-semibold tracking-tight">{h.name}</h3>
+                  </Text3D>
                   <p className="mt-3 leading-relaxed text-graphite">{h.text}</p>
                   {count > 0 && (
                     <a

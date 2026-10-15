@@ -1,10 +1,35 @@
 import { useEffect, useRef } from 'react'
 
-type Particle = { x: number; y: number; vx: number; vy: number; r: number; a: number }
+type Particle = {
+  x: number
+  y: number
+  vx: number
+  vy: number
+  r: number
+  a: number // peak opacity
+  tint: number // small random offset on top of the screen-wide color gradient
+  pulse: number // fade speed
+  phase: number
+}
+
+type Wave = { x: number; y: number; start: number }
+
+// The field shifts from slate (left) to indigo (right); a passing ripple tints toward sky.
+const SLATE = [100, 116, 139]
+const INDIGO = [118, 128, 230]
+const RIPPLE = [14, 165, 233]
+
+const WAVE_SPEED = 0.22 // px per ms
+const WAVE_WIDTH = 200 // px, how thick the ripple band is
+const WAVE_LIFE = 6500 // ms
+const WAVE_PUSH = 9 // px, max displacement
+
+const mix = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(v + (b[i] - v) * t))
 
 /**
- * Slowly drifting dots behind the whole page, plus a few soft color washes so the
- * glass surfaces have something to blur. Purely ambient: ignores the mouse.
+ * A dense field of small, crisp, slowly drifting dots that fade in and out, behind the
+ * whole page. Ignores the mouse position; a click sends a ripple outward that pushes the
+ * dots out and back as it passes and briefly shifts their color.
  */
 export function Particles() {
   const ref = useRef<HTMLCanvasElement>(null)
@@ -16,6 +41,7 @@ export function Particles() {
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     let particles: Particle[] = []
+    let waves: Wave[] = []
     let w = 0
     let h = 0
     let frame = 0
@@ -27,44 +53,89 @@ export function Particles() {
       canvas.width = w * dpr
       canvas.height = h * dpr
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      const count = Math.round(Math.min(90, (w * h) / 16000))
-      particles = Array.from({ length: count }, () => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.18,
-        vy: (Math.random() - 0.5) * 0.18 - 0.05,
-        r: 0.8 + Math.random() * 2.2,
-        a: 0.15 + Math.random() * 0.35,
-      }))
+      const count = Math.round(Math.min(1600, (w * h) / 850))
+      particles = Array.from({ length: count }, () => {
+        const size = Math.random() ** 3 // mostly tiny, a few bigger
+        return {
+          x: Math.random() * w,
+          y: Math.random() * h,
+          vx: (Math.random() - 0.5) * 0.12,
+          vy: (Math.random() - 0.5) * 0.12 - 0.03,
+          r: 0.6 + size * 2.2,
+          a: 0.3 + Math.random() * 0.45,
+          tint: (Math.random() - 0.5) * 0.35,
+          pulse: 0.0003 + Math.random() * 0.0009,
+          phase: Math.random() * Math.PI * 2,
+        }
+      })
     }
 
-    const draw = () => {
+    const draw = (now: number) => {
       ctx.clearRect(0, 0, w, h)
+      waves = waves.filter((wv) => now - wv.start < WAVE_LIFE)
+
       for (const p of particles) {
-        p.x += p.vx
-        p.y += p.vy
-        if (p.x < -10) p.x = w + 10
-        if (p.x > w + 10) p.x = -10
-        if (p.y < -10) p.y = h + 10
-        if (p.y > h + 10) p.y = -10
+        if (!reduced) {
+          p.x += p.vx
+          p.y += p.vy
+          if (p.x < -5) p.x = w + 5
+          if (p.x > w + 5) p.x = -5
+          if (p.y < -5) p.y = h + 5
+          if (p.y > h + 5) p.y = -5
+        }
+
+        // Ripple: inside the moving band the dot swings out and back (one sine period),
+        // weighted by a bell curve so the band has soft edges, fading as the wave ages.
+        let dx = 0
+        let dy = 0
+        let hit = 0
+        for (const wv of waves) {
+          const age = now - wv.start
+          const ex = p.x - wv.x
+          const ey = p.y - wv.y
+          const d = Math.hypot(ex, ey) || 1
+          const band = (d - age * WAVE_SPEED) / WAVE_WIDTH
+          if (band < -2 || band > 2) continue
+          const env = Math.exp(-band * band * 2) * (1 - age / WAVE_LIFE) ** 1.5
+          const swing = Math.sin(band * Math.PI) * env * WAVE_PUSH
+          dx += (ex / d) * swing
+          dy += (ey / d) * swing
+          hit = Math.max(hit, env)
+        }
+
+        const breathe = reduced ? 0.8 : 0.5 + 0.5 * Math.sin(now * p.pulse + p.phase)
+        const alpha = Math.min(1, p.a * (0.1 + 0.9 * breathe) + hit * 0.3)
+        if (alpha < 0.02) continue
+
+        const across = Math.min(1, Math.max(0, p.x / w + p.tint))
+        const [r, g, b] = mix(mix(SLATE, INDIGO, across), RIPPLE, hit * 0.7)
+        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`
         ctx.beginPath()
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(71, 85, 105, ${p.a})`
+        ctx.arc(p.x + dx, p.y + dy, p.r, 0, Math.PI * 2)
         ctx.fill()
       }
+
       if (!reduced) frame = requestAnimationFrame(draw)
     }
 
+    const onClick = (e: PointerEvent) => {
+      if (reduced) return
+      waves.push({ x: e.clientX, y: e.clientY, start: performance.now() })
+      if (waves.length > 4) waves.shift()
+    }
+
     resize()
-    draw()
+    frame = requestAnimationFrame(draw)
     const onResize = () => {
       resize()
-      if (reduced) draw()
+      if (reduced) draw(performance.now())
     }
     window.addEventListener('resize', onResize)
+    window.addEventListener('pointerdown', onClick)
     return () => {
       cancelAnimationFrame(frame)
       window.removeEventListener('resize', onResize)
+      window.removeEventListener('pointerdown', onClick)
     }
   }, [])
 

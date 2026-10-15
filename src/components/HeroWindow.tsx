@@ -58,14 +58,15 @@ export function HeroWindow() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => setIndex(i)}
-                className={`relative flex min-w-0 flex-1 items-center gap-2 rounded-t-lg px-3 pt-1.5 pb-2.5 text-xs transition-colors ${
-                  active ? 'bg-white text-ink' : 'text-mist hover:text-graphite'
+                title={s.hobby.name}
+                className={`relative flex min-w-0 items-center gap-2 rounded-t-lg px-3 pt-1.5 pb-2.5 text-xs transition-[color,background-color,flex-grow] duration-500 ${
+                  active ? 'flex-[2] bg-white text-ink' : 'flex-1 text-mist hover:text-graphite'
                 }`}
               >
                 <span className="shrink-0 [&>svg]:h-3.5 [&>svg]:w-3.5">
                   <HobbyIcon id={s.hobby.id} />
                 </span>
-                <span className="truncate">{s.hobby.name}</span>
+                <span className={`truncate ${active ? '' : 'hidden xl:inline'}`}>{s.hobby.name}</span>
                 {active && (
                   <motion.span
                     key={index}
@@ -94,7 +95,7 @@ export function HeroWindow() {
         <AnimatePresence initial={false}>
           <motion.div
             key={index}
-            className="[grid-area:1/1] px-7 pt-6 pb-10"
+            className="[grid-area:1/1] px-10 pt-6 pb-10"
             initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.6, delay: 0.2, ease } }}
             exit={{ opacity: 0, y: -12, filter: 'blur(6px)', transition: { duration: 0.25, ease } }}
