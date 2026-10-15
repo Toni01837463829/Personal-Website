@@ -38,6 +38,8 @@ export const projects: {
   image?: string
   /** Small line under the portal; defaults to the link's domain */
   caption?: string
+  /** Three colors for the portal's rim and glow, taken from the screenshot */
+  colors?: [string, string, string]
 }[] = [
   {
     title: 'Website der FF Pfaffenschlag',
@@ -47,6 +49,7 @@ export const projects: {
     visual: 'portal',
     link: 'https://www.ff-pfaffenschlag.at/',
     image: 'projects/ff-pfaffenschlag.jpg',
+    colors: ['#e5383b', '#f97316', '#e11d48'],
   },
   {
     title: 'Sim-Racing Dashboards',
@@ -56,6 +59,7 @@ export const projects: {
     visual: 'portal',
     image: 'projects/simracing-dashboard.webp',
     caption: 'Live-Dashboard',
+    colors: ['#22c55e', '#22d3ee', '#a855f7'],
   },
   {
     title: 'Garmin Edge 1030 Datenseiten',

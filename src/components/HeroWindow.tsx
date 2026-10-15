@@ -31,6 +31,7 @@ function SlideVisual({ project, onOpenChange }: { project?: Project; onOpenChang
             href={project.link}
             label={project.title}
             caption={project.caption}
+            colors={project.colors}
             onOpenChange={onOpenChange}
           />
         </div>

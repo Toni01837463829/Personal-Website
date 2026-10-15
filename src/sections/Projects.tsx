@@ -29,6 +29,7 @@ function ProjectVisual({ project }: { project: Project }) {
         href={project.link}
         label={project.title}
         caption={project.caption}
+        colors={project.colors}
       />
     )
   }
