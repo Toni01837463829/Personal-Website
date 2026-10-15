@@ -4,30 +4,30 @@ import { person } from '../content'
 
 export function Contact() {
   return (
-    <section id="kontakt" className="relative overflow-hidden bg-ink px-6 py-32 text-paper md:py-44">
-      <div className="mx-auto max-w-6xl">
+    <section id="kontakt" className="relative px-6 pt-24 pb-12 md:px-10 md:pt-32">
+      <div className="glass mx-auto max-w-6xl rounded-[2.5rem] px-8 py-24 md:px-20 md:py-36">
         <Reveal>
-          <p className="mb-6 text-sm tracking-[0.2em] text-mist uppercase">Kontakt</p>
+          <p className="mb-8 text-xs font-medium tracking-[0.25em] text-mist uppercase">Kontakt</p>
         </Reveal>
         <Depth depth={0.8}>
           <Reveal delay={0.1}>
-            <h2 className="font-serif text-6xl leading-[0.95] md:text-9xl">
-              Lass uns <em>reden.</em>
+            <h2 className="text-5xl leading-[1.05] font-semibold tracking-[-0.04em] md:text-8xl">
+              Lass uns reden.
             </h2>
           </Reveal>
         </Depth>
-        <Reveal delay={0.2} className="mt-14 flex flex-wrap gap-4">
+        <Reveal delay={0.2} className="mt-16 flex flex-wrap gap-4">
           <a
             href={person.github}
-            className="rounded-full border border-paper/30 px-6 py-3 transition-colors hover:bg-paper hover:text-ink"
+            className="rounded-full bg-ink px-7 py-3.5 text-sm text-paper transition-transform hover:-translate-y-0.5"
           >
             GitHub
           </a>
         </Reveal>
       </div>
-      <footer className="mx-auto mt-32 flex max-w-6xl justify-between border-t border-paper/15 pt-8 text-sm text-mist">
+      <footer className="mx-auto mt-16 flex max-w-6xl justify-between px-2 text-sm text-mist">
         <span>© {new Date().getFullYear()} {person.name}</span>
-        <a href="#top" className="hover:text-paper">
+        <a href="#top" className="hover:text-ink">
           Nach oben ↑
         </a>
       </footer>

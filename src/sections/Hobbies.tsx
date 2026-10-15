@@ -6,26 +6,26 @@ import { hobbies, projects } from '../content'
 
 export function Hobbies() {
   return (
-    <section id="hobbys" className="relative mx-auto max-w-6xl px-6 py-32 md:py-44">
+    <section id="hobbys" className="relative mx-auto max-w-6xl px-6 py-40 md:px-10 md:py-56">
       <SectionTitle index="02" kicker="Hobbys" title="Was mich antreibt" />
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
         {hobbies.map((h, i) => {
           const count = projects.filter((p) => p.hobby === h.id).length
           return (
             <Reveal key={h.id} delay={i * 0.1} className="h-full">
               <TiltCard>
-                <div className="flex h-full min-h-72 flex-col p-7">
+                <div className="flex h-full min-h-80 flex-col p-9">
                   <div className="flex items-start justify-between text-ink">
                     <HobbyIcon id={h.id} />
-                    <span className="font-serif text-2xl text-stone">0{i + 1}</span>
+                    <span className="text-xs font-medium text-mist tabular-nums">0{i + 1}</span>
                   </div>
-                  <h3 className="mt-auto pt-10 font-serif text-3xl leading-tight">{h.name}</h3>
-                  <p className="mt-3 text-graphite">{h.text}</p>
+                  <h3 className="mt-auto pt-14 text-xl font-semibold tracking-tight">{h.name}</h3>
+                  <p className="mt-3 leading-relaxed text-graphite">{h.text}</p>
                   {count > 0 && (
                     <a
                       href={`#projekt-${h.id}`}
-                      className="mt-5 text-sm text-ink underline decoration-stone underline-offset-4 hover:decoration-ink"
+                      className="mt-6 text-sm text-ink underline decoration-stone underline-offset-4 hover:decoration-ink"
                     >
                       {count === 1 ? '1 Projekt' : `${count} Projekte`} ansehen
                     </a>

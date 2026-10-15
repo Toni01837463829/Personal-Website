@@ -31,7 +31,7 @@ export function BrowserVisual() {
         </div>
       </div>
       <Depth depth={2.4} className="absolute -right-4 -bottom-6 w-44">
-        <div className="rounded-xl border border-stone bg-white p-4 shadow-[0_25px_50px_-20px_rgba(28,26,23,.35)]">
+        <div className="rounded-xl border border-stone bg-white p-4 shadow-[0_25px_50px_-20px_rgba(17,21,28,.35)]">
           <p className="text-[10px] tracking-widest text-mist uppercase">Letzter Einsatz</p>
           <p className="mt-1 text-sm font-medium">Technischer Einsatz</p>
           <span className="mt-3 block h-1.5 w-20 rounded bg-stone" />
@@ -51,7 +51,7 @@ export function DashboardVisual() {
             <motion.span
               key={i}
               className="h-3 flex-1 rounded-sm"
-              style={{ background: i < 9 ? '#d9d0c1' : i < 12 ? '#e3b34a' : '#d4573f' }}
+              style={{ background: i < 9 ? '#d3dae3' : i < 12 ? '#e3b34a' : '#d4573f' }}
               animate={{ opacity: [0.15, 1, 1, 0.15] }}
               transition={{ duration: 2.4, repeat: Infinity, times: [0, 0.5, 0.8, 1], delay: i * 0.06 }}
             />
@@ -95,7 +95,7 @@ export function DashboardVisual() {
         </div>
       </div>
       <Depth depth={2.4} className="absolute -bottom-10 -left-6 w-40">
-        <div className="rounded-xl bg-paper p-4 shadow-[0_25px_50px_-20px_rgba(28,26,23,.45)]">
+        <div className="rounded-xl bg-paper p-4 shadow-[0_25px_50px_-20px_rgba(17,21,28,.45)]">
           <p className="text-[10px] tracking-widest text-mist uppercase">Reifen</p>
           <div className="mt-2 grid grid-cols-2 gap-1.5 font-mono text-xs">
             <span className="rounded bg-sand px-2 py-1">86°</span>
@@ -118,7 +118,7 @@ export function GarminVisual() {
   ]
   return (
     <div className="relative flex aspect-[4/3] w-full items-center justify-center">
-      <div className="h-full w-[58%] rounded-[2rem] border border-stone bg-[#2a2723] p-3 shadow-[0_30px_60px_-30px_rgba(28,26,23,.5)]">
+      <div className="h-full w-[58%] rounded-[2rem] border border-stone bg-[#1a1f27] p-3 shadow-[0_30px_60px_-30px_rgba(17,21,28,.5)]">
         <div className="grid h-full grid-rows-[1.3fr_1fr_1fr] gap-px overflow-hidden rounded-[1.4rem] bg-stone">
           <div className="flex flex-col items-center justify-center bg-paper">
             <p className="text-[10px] tracking-widest text-mist uppercase">{fields[0][0]}</p>
@@ -145,7 +145,7 @@ export function GarminVisual() {
         </div>
       </div>
       <Depth depth={2.4} className="absolute right-0 bottom-6 w-40">
-        <div className="rounded-xl border border-stone bg-white p-4 shadow-[0_25px_50px_-20px_rgba(28,26,23,.35)]">
+        <div className="rounded-xl border border-stone bg-white p-4 shadow-[0_25px_50px_-20px_rgba(17,21,28,.35)]">
           <p className="text-[10px] tracking-widest text-mist uppercase">Eigene Seite</p>
           <p className="mt-1 text-sm font-medium">Intervall 3 / 5</p>
           <span className="mt-3 block h-1.5 w-full overflow-hidden rounded bg-sand">

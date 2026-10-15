@@ -24,20 +24,20 @@ function ProjectRow({ project, index }: { project: (typeof projects)[number]; in
     <article
       ref={ref}
       id={`projekt-${project.hobby}`}
-      className="grid scroll-mt-28 items-center gap-12 md:grid-cols-2 md:gap-20"
+      className="grid scroll-mt-28 items-center gap-16 md:grid-cols-2 md:gap-28"
     >
       <div className={flipped ? 'md:order-2' : ''}>
         <Reveal>
-          <p className="mb-4 flex items-center gap-3 text-sm text-mist">
-            <span className="font-serif text-2xl text-stone">0{index + 1}</span>
+          <p className="mb-6 flex items-center gap-4 text-sm text-mist">
+            <span className="text-xs font-medium tabular-nums">0{index + 1}</span>
             <span className="h-px w-8 bg-stone" />
             {hobby?.name}
           </p>
-          <h3 className="font-serif text-4xl leading-tight md:text-5xl">{project.title}</h3>
-          <p className="mt-5 text-lg text-graphite">{project.text}</p>
-          <div className="mt-6 flex flex-wrap gap-2">
+          <h3 className="text-3xl font-semibold tracking-tight md:text-4xl">{project.title}</h3>
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-graphite">{project.text}</p>
+          <div className="mt-8 flex flex-wrap gap-2">
             {project.tags.map((t) => (
-              <span key={t} className="rounded-full border border-stone px-3 py-1 text-sm text-graphite">
+              <span key={t} className="glass rounded-full px-3.5 py-1 text-sm text-graphite">
                 {t}
               </span>
             ))}
@@ -45,12 +45,12 @@ function ProjectRow({ project, index }: { project: (typeof projects)[number]; in
           {project.link ? (
             <a
               href={project.link}
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm text-paper transition-transform hover:-translate-y-0.5"
+              className="mt-10 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm text-paper transition-transform hover:-translate-y-0.5"
             >
               Projekt ansehen <span aria-hidden>→</span>
             </a>
           ) : (
-            <p className="mt-8 text-sm text-mist">Link folgt</p>
+            <p className="mt-10 text-sm text-mist">Link folgt</p>
           )}
         </Reveal>
       </div>
@@ -68,9 +68,9 @@ function ProjectRow({ project, index }: { project: (typeof projects)[number]; in
 
 export function Projects() {
   return (
-    <section id="projekte" className="relative mx-auto max-w-6xl px-6 py-32 md:py-44">
+    <section id="projekte" className="relative mx-auto max-w-6xl px-6 py-40 md:px-10 md:py-56">
       <SectionTitle index="03" kicker="Projekte" title="Was ich gebaut habe" />
-      <div className="space-y-36 md:space-y-48">
+      <div className="space-y-44 md:space-y-64">
         {projects.map((p, i) => (
           <ProjectRow key={p.title} project={p} index={i} />
         ))}

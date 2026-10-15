@@ -14,7 +14,7 @@ export function TiltCard({ children, className }: { children: ReactNode; classNa
   const glareY = useTransform(sy, (v) => `${50 + v * 40}%`)
   const glare = useTransform(
     [glareX, glareY],
-    ([gx, gy]) => `radial-gradient(circle at ${gx} ${gy}, rgba(255,255,255,.55), transparent 55%)`,
+    ([gx, gy]) => `radial-gradient(circle at ${gx} ${gy}, rgba(255,255,255,.4), transparent 55%)`,
   )
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
@@ -33,7 +33,7 @@ export function TiltCard({ children, className }: { children: ReactNode; classNa
         onPointerMove={onMove}
         onPointerLeave={onLeave}
         style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
-        className={`relative h-full rounded-3xl border border-stone/70 bg-white/60 shadow-[0_30px_60px_-30px_rgba(28,26,23,.25)] backdrop-blur-sm ${className ?? ''}`}
+        className={`glass relative h-full rounded-3xl ${className ?? ''}`}
       >
         <motion.div
           aria-hidden

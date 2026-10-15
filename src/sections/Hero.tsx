@@ -9,7 +9,7 @@ const chips = [
   { label: 'FH OÖ · AI Solutions', className: 'right-[7%] top-[18%]', depth: 3 },
   { label: 'Triathlon', className: 'left-[12%] bottom-[22%]', depth: 1.4 },
   { label: 'Sim-Racing', className: 'right-[14%] bottom-[26%]', depth: 2.6 },
-  { label: 'Freiwillige Feuerwehr', className: 'left-[38%] bottom-[12%]', depth: 0.9 },
+  { label: 'Freiwillige Feuerwehr', className: 'right-[6%] bottom-[10%]', depth: 0.9 },
 ]
 
 const ease = [0.22, 1, 0.36, 1] as const
@@ -19,17 +19,9 @@ export function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.86])
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
-  const bgY = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
 
   return (
     <section ref={ref} id="top" className="relative h-[100svh] overflow-hidden">
-      {/* Far layer: huge faint word */}
-      <motion.div style={{ y: bgY }} className="absolute inset-0 flex items-center justify-center">
-        <Depth depth={-1.5}>
-          <span className="font-serif text-[34vw] leading-none text-sand select-none">Servus</span>
-        </Depth>
-      </motion.div>
-
       <motion.div style={{ scale, opacity }} className="relative h-full">
         {/* Floating chips */}
         {chips.map((c, i) => (
@@ -41,7 +33,7 @@ export function Hero() {
             transition={{ duration: 1, delay: 0.5 + i * 0.12, ease }}
           >
             <Depth depth={c.depth}>
-              <span className="block rounded-2xl border border-stone/80 bg-white/70 px-5 py-3 text-sm text-graphite shadow-[0_20px_40px_-20px_rgba(28,26,23,.35)] backdrop-blur">
+              <span className="glass block rounded-full px-5 py-2.5 text-sm text-graphite">
                 {c.label}
               </span>
             </Depth>
@@ -55,13 +47,13 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease }}
-              className="mb-4 text-sm tracking-[0.3em] text-mist uppercase"
+              className="mb-8 text-xs font-medium tracking-[0.3em] text-mist uppercase"
             >
               Persönliche Website
             </motion.p>
           </Depth>
           <Depth depth={1}>
-            <h1 className="font-serif text-[22vw] leading-[0.85] md:text-[14rem]">
+            <h1 className="text-[20vw] leading-[0.9] font-semibold tracking-[-0.05em] md:text-[10rem]">
               {person.name.split('').map((ch, i) => (
                 <motion.span
                   key={i}
@@ -80,7 +72,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.5, ease }}
-              className="mt-6 max-w-xl text-lg text-graphite md:text-xl"
+              className="mt-10 max-w-lg text-lg leading-relaxed text-graphite md:text-xl"
             >
               {person.tagline}
             </motion.p>
