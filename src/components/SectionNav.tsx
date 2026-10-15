@@ -1,41 +1,13 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useEffect, useState } from 'react'
-
-const sections = [
-  { id: 'top', label: 'Start' },
-  { id: 'ueber-mich', label: 'Über mich' },
-  { id: 'hobbys', label: 'Hobbys' },
-  { id: 'projekte', label: 'Projekte' },
-  { id: 'kontakt', label: 'Kontakt' },
-]
+import { useState } from 'react'
+import { chapters } from '../chapters'
 
 const calm = { type: 'spring', stiffness: 170, damping: 26, mass: 0.9 } as const
 
 /** Quiet vertical indicator on the left that follows the section in view. */
-export function SectionNav() {
-  const [active, setActive] = useState(0)
+export function SectionNav({ active }: { active: number }) {
   const [hovered, setHovered] = useState(false)
-
-  // The active section is the last one whose top has passed 40% of the viewport.
-  useEffect(() => {
-    const update = () => {
-      const line = window.innerHeight * 0.4
-      let current = 0
-      sections.forEach((s, i) => {
-        const el = document.getElementById(s.id)
-        if (el && el.getBoundingClientRect().top <= line) current = i
-      })
-      const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4
-      setActive(atBottom ? sections.length - 1 : current)
-    }
-    update()
-    window.addEventListener('scroll', update, { passive: true })
-    window.addEventListener('resize', update)
-    return () => {
-      window.removeEventListener('scroll', update)
-      window.removeEventListener('resize', update)
-    }
-  }, [])
+  const [a, b] = chapters[active].accent
 
   const showLabels = hovered
 
@@ -53,7 +25,7 @@ export function SectionNav() {
       className="glass fixed top-1/2 left-3 z-40 hidden -translate-y-1/2 px-1.5 py-2.5 lg:block"
     >
       <ul className="flex flex-col gap-0.5">
-        {sections.map((s, i) => {
+        {chapters.map((s, i) => {
           const isActive = i === active
           return (
             <li key={s.id}>
@@ -69,7 +41,8 @@ export function SectionNav() {
                     <motion.span
                       layoutId="section-indicator"
                       transition={calm}
-                      className="absolute left-1/2 h-4 w-1 -translate-x-1/2 rounded-full bg-graphite/80"
+                      animate={{ backgroundImage: `linear-gradient(180deg, ${a}, ${b})` }}
+                      className="absolute left-1/2 h-4 w-1 -translate-x-1/2 rounded-full"
                     />
                   )}
                 </span>
@@ -80,7 +53,8 @@ export function SectionNav() {
                       animate={{ width: 'auto', opacity: isActive ? 1 : 0.6 }}
                       exit={{ width: 0, opacity: 0 }}
                       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                      className={`overflow-hidden text-[11px] whitespace-nowrap ${isActive ? 'text-ink' : 'text-graphite'}`}
+                      className={`overflow-hidden text-[11px] whitespace-nowrap ${isActive ? 'font-semibold' : 'text-graphite'}`}
+                      style={isActive ? { color: a } : undefined}
                     >
                       <span className="block pr-1.5 pl-2">{s.label}</span>
                     </motion.span>

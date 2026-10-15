@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { useEffect, useRef } from 'react'
 
 type Particle = {
@@ -29,9 +30,10 @@ const mix = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(
 /**
  * A dense field of small, crisp, slowly drifting dots that fade in and out, behind the
  * whole page. Ignores the mouse position; a click sends a ripple outward that pushes the
- * dots out and back as it passes and briefly shifts their color.
+ * dots out and back as it passes and briefly shifts their color. Two soft glows behind
+ * the field take on the accent of the section in view.
  */
-export function Particles() {
+export function Particles({ accent }: { accent: readonly [string, string] }) {
   const ref = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -141,8 +143,16 @@ export function Particles() {
 
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      <div className="absolute -top-40 -left-40 h-[36rem] w-[36rem] rounded-full bg-sky-200/50 blur-3xl" />
-      <div className="absolute top-1/3 -right-48 h-[40rem] w-[40rem] rounded-full bg-indigo-200/40 blur-3xl" />
+      <motion.div
+        animate={{ backgroundColor: accent[1] }}
+        transition={{ duration: 1.6, ease: 'easeInOut' }}
+        className="absolute -top-40 -left-40 h-[36rem] w-[36rem] rounded-full opacity-20 blur-3xl"
+      />
+      <motion.div
+        animate={{ backgroundColor: accent[0] }}
+        transition={{ duration: 1.6, ease: 'easeInOut' }}
+        className="absolute top-1/3 -right-48 h-[40rem] w-[40rem] rounded-full opacity-15 blur-3xl"
+      />
       <div className="absolute -bottom-48 left-1/4 h-[34rem] w-[34rem] rounded-full bg-slate-300/40 blur-3xl" />
       <canvas ref={ref} className="absolute inset-0 h-full w-full" />
     </div>

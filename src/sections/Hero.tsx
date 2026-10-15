@@ -2,6 +2,7 @@ import { motion, useScroll, useTransform } from 'motion/react'
 import { useRef } from 'react'
 import { HeroWindow } from '../components/HeroWindow'
 import { Depth } from '../components/Mouse'
+import { Rich } from '../components/Rich'
 import { Text3D } from '../components/Text3D'
 import { person } from '../content'
 
@@ -53,7 +54,7 @@ export function Hero() {
               transition={{ duration: 0.9, delay: 0.4, ease }}
               className="mt-10 max-w-md text-lg leading-relaxed text-graphite md:text-xl"
             >
-              {person.tagline}
+              <Rich text={person.tagline} />
             </motion.p>
           </Text3D>
           <Depth depth={1}>

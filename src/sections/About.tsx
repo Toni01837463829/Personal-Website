@@ -1,7 +1,9 @@
 import { motion, useScroll, useTransform } from 'motion/react'
 import { useRef } from 'react'
+import { accentVars } from '../chapters'
 import { Depth } from '../components/Mouse'
 import { Reveal } from '../components/Reveal'
+import { Rich } from '../components/Rich'
 import { Text3D } from '../components/Text3D'
 import { SectionTitle } from '../components/SectionTitle'
 import { about } from '../content'
@@ -12,7 +14,7 @@ export function About() {
   const line = useTransform(scrollYProgress, [0, 1], [0, 1])
 
   return (
-    <section id="ueber-mich" className="relative mx-auto max-w-6xl px-6 py-40 md:px-10 md:py-56">
+    <section id="ueber-mich" style={accentVars('ueber-mich')} className="relative mx-auto max-w-6xl scroll-mt-10 px-6 pt-16 pb-40 md:px-10 md:pt-24 md:pb-56">
       <SectionTitle index="01" kicker="Über mich" title="Wer ich bin" />
 
       <div className="grid gap-20 md:grid-cols-[1.2fr_1fr] md:gap-32">
@@ -20,7 +22,9 @@ export function About() {
           {about.text.map((p, i) => (
             <Reveal key={i} delay={i * 0.1}>
               <Text3D depth={0.5 + i * 0.25} tilt={false}>
-                <p>{p}</p>
+                <p className={i === 0 ? 'text-2xl leading-snug font-medium tracking-tight text-ink md:text-[1.75rem]' : undefined}>
+                  <Rich text={p} />
+                </p>
               </Text3D>
             </Reveal>
           ))}

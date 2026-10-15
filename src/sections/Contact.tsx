@@ -1,3 +1,4 @@
+import { accentVars } from '../chapters'
 import { Depth } from '../components/Mouse'
 import { Reveal } from '../components/Reveal'
 import { Text3D } from '../components/Text3D'
@@ -5,11 +6,11 @@ import { person } from '../content'
 
 export function Contact() {
   return (
-    <section id="kontakt" className="relative px-6 pt-24 pb-12 md:px-10 md:pt-32">
+    <section id="kontakt" style={accentVars('kontakt')} className="relative scroll-mt-10 px-6 pt-8 pb-12 md:px-10 md:pt-12">
       <div className="glass mx-auto max-w-6xl rounded-[2.5rem] px-8 py-24 md:px-20 md:py-36">
         <Depth depth={0.3}>
           <Reveal>
-            <p className="mb-8 text-xs font-medium tracking-[0.25em] text-mist uppercase">Kontakt</p>
+            <p className="text-accent mb-8 text-xs font-medium tracking-[0.25em] uppercase">Kontakt</p>
           </Reveal>
         </Depth>
         <Text3D depth={1.5}>

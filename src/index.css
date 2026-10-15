@@ -11,6 +11,12 @@
   --font-sans: 'Inter Variable', system-ui, sans-serif;
 }
 
+/* Section accent; each section overrides these (see chapters.ts) */
+:root {
+  --accent-a: #4338ca;
+  --accent-b: #0284c7;
+}
+
 html {
   background: var(--color-paper);
   color: var(--color-ink);
@@ -40,6 +46,26 @@ body {
   -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
 
+/* Hollow letters, tinted with the section accent */
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent-a) 40%, transparent);
+}
+
+/* Solid letters with a few px of depth underneath and a soft shadow */
+@utility text-extrude {
+  text-shadow:
+    0 1px 0 #d3dae3,
+    0 2px 0 #c7cfd9,
+    0 3px 0 #bbc4cf,
+    0 4px 0 #afb9c5,
+    0 18px 30px rgb(17 21 28 / 0.18);
+}
+
+/* Solid accent color for small labels */
+@utility text-accent {
+  color: var(--accent-a);
+}
 
 /* Custom cursor replaces the system one on mouse devices */
 @media (pointer: fine) {

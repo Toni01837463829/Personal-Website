@@ -1,7 +1,9 @@
 import { motion, useScroll, useTransform } from 'motion/react'
 import { useRef } from 'react'
+import { accentVars } from '../chapters'
 import { Depth } from '../components/Mouse'
 import { Reveal } from '../components/Reveal'
+import { Rich } from '../components/Rich'
 import { Text3D } from '../components/Text3D'
 import { SectionTitle } from '../components/SectionTitle'
 import { TiltCard } from '../components/TiltCard'
@@ -39,7 +41,9 @@ function ProjectRow({ project, index }: { project: (typeof projects)[number]; in
             <h3 className="text-3xl font-semibold tracking-tight md:text-4xl">{project.title}</h3>
           </Text3D>
           <Text3D depth={0.6} tilt={false}>
-            <p className="mt-6 max-w-md text-lg leading-relaxed text-graphite">{project.text}</p>
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-graphite">
+              <Rich text={project.text} />
+            </p>
           </Text3D>
           <Depth depth={0.35}>
             <div className="mt-8 flex flex-wrap gap-2">
@@ -76,7 +80,7 @@ function ProjectRow({ project, index }: { project: (typeof projects)[number]; in
 
 export function Projects() {
   return (
-    <section id="projekte" className="relative mx-auto max-w-6xl px-6 py-40 md:px-10 md:py-56">
+    <section id="projekte" style={accentVars('projekte')} className="relative mx-auto max-w-6xl scroll-mt-10 px-6 pt-16 pb-40 md:px-10 md:pt-24 md:pb-56">
       <SectionTitle index="03" kicker="Projekte" title="Was ich gebaut habe" />
       <div className="space-y-44 md:space-y-64">
         {projects.map((p, i) => (

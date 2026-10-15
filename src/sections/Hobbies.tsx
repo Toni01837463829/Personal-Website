@@ -1,5 +1,7 @@
+import { accentVars } from '../chapters'
 import { HobbyIcon } from '../components/Icons'
 import { Reveal } from '../components/Reveal'
+import { Rich } from '../components/Rich'
 import { Text3D } from '../components/Text3D'
 import { SectionTitle } from '../components/SectionTitle'
 import { TiltCard } from '../components/TiltCard'
@@ -7,7 +9,7 @@ import { hobbies, projects } from '../content'
 
 export function Hobbies() {
   return (
-    <section id="hobbys" className="relative mx-auto max-w-6xl px-6 py-40 md:px-10 md:py-56">
+    <section id="hobbys" style={accentVars('hobbys')} className="relative mx-auto max-w-6xl scroll-mt-10 px-6 pt-16 pb-40 md:px-10 md:pt-24 md:pb-56">
       <SectionTitle index="02" kicker="Hobbys" title="Was mich antreibt" />
 
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -24,7 +26,9 @@ export function Hobbies() {
                   <Text3D depth={0.6} tilt={false} className="mt-auto block pt-14">
                     <h3 className="text-xl font-semibold tracking-tight">{h.name}</h3>
                   </Text3D>
-                  <p className="mt-3 leading-relaxed text-graphite">{h.text}</p>
+                  <p className="mt-3 leading-relaxed text-graphite">
+                    <Rich text={h.text} />
+                  </p>
                   {count > 0 && (
                     <a
                       href={`#projekt-${h.id}`}
