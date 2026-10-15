@@ -7,7 +7,6 @@ import { Particles } from './components/Particles'
 import { SectionBreak } from './components/SectionBreak'
 import { SectionNav } from './components/SectionNav'
 import { About } from './sections/About'
-import { Contact } from './sections/Contact'
 import { Hero } from './sections/Hero'
 import { Hobbies } from './sections/Hobbies'
 import { Projects } from './sections/Projects'
@@ -38,8 +37,6 @@ export default function App() {
           <Hobbies />
           <SectionBreak to="projekte" />
           <Projects />
-          <SectionBreak to="kontakt" />
-          <Contact />
         </main>
         <Cursor />
       </div>

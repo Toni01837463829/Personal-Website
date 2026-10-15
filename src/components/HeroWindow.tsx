@@ -1,24 +1,46 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useState } from 'react'
-import { hobbies, projects } from '../content'
+import { hobbies, person, projects } from '../content'
+import { Portal } from './Portal'
 import { HobbyIcon } from './Icons'
-import { BrowserVisual, CodeVisual, DashboardVisual, GarminVisual } from './Visuals'
+import { GarminHeroVisual } from './GarminShowcase'
+import { BrowserVisual, CodeVisual, DashboardVisual } from './Visuals'
 
 const visuals = {
   browser: BrowserVisual,
   dashboard: DashboardVisual,
-  garmin: GarminVisual,
+  garmin: GarminHeroVisual,
 }
 
-// One tab per activity; each shows its project, or the code editor for "Coding".
+// One tab per activity; each shows its project, or the code editor (linking to GitHub) for "Coding".
 const slides = hobbies.map((h) => {
   const project = projects.find((p) => p.hobby === h.id)
-  return {
-    hobby: h,
-    title: project?.title ?? 'Werkzeuge für die eigenen Hobbys',
-    Visual: project ? visuals[project.visual] : CodeVisual,
-  }
+  return { hobby: h, title: project?.title ?? 'Werkzeuge für die eigenen Hobbys', project }
 })
+
+function SlideVisual({ project, onOpenChange }: { project?: Project; onOpenChange: (open: boolean) => void }) {
+  if (!project) return <CodeVisual href={person.github} />
+  if (project.visual === 'portal') {
+    // Same height as the other slides, so the window does not jump
+    return (
+      <div className="flex aspect-[4/3] w-full items-center">
+        <div className="w-full">
+          <Portal
+            image={import.meta.env.BASE_URL + project.image}
+            href={project.link}
+            label={project.title}
+            caption={project.caption}
+            onOpenChange={onOpenChange}
+          />
+        </div>
+      </div>
+    )
+  }
+  const Visual = visuals[project.visual]
+  return <Visual />
+}
+
+type Project = (typeof projects)[number]
 
 const SLIDE_MS = 4500
 const ease = [0.22, 1, 0.36, 1] as const
@@ -26,11 +48,16 @@ const ease = [0.22, 1, 0.36, 1] as const
 /** A light macOS-style browser window that pops open and cycles through activities and projects. */
 export function HeroWindow() {
   const [index, setIndex] = useState(0)
+  // Hold the current slide while the mouse is on the window or a screenshot is opened up
+  const [hovered, setHovered] = useState(false)
+  const [popout, setPopout] = useState(false)
+  const paused = hovered || popout
 
   useEffect(() => {
+    if (paused) return
     const t = setTimeout(() => setIndex((i) => (i + 1) % slides.length), SLIDE_MS)
     return () => clearTimeout(t)
-  }, [index])
+  }, [index, paused])
 
   const slide = slides[index]
 
@@ -40,6 +67,8 @@ export function HeroWindow() {
       animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
       transition={{ duration: 1.1, delay: 0.5, ease }}
       style={{ transformOrigin: '50% 100%' }}
+      onPointerEnter={() => setHovered(true)}
+      onPointerLeave={() => setHovered(false)}
       className="glass w-full overflow-hidden rounded-2xl bg-white/70!"
     >
       {/* Title bar with traffic lights and tabs */}
@@ -69,11 +98,11 @@ export function HeroWindow() {
                 <span className={`truncate ${active ? '' : 'hidden xl:inline'}`}>{s.hobby.name}</span>
                 {active && (
                   <motion.span
-                    key={index}
+                    key={`${index}-${paused}`}
                     className="absolute inset-x-2 bottom-0 h-0.5 origin-left rounded-full bg-ink/70"
-                    initial={{ scaleX: 0 }}
+                    initial={{ scaleX: paused ? 1 : 0 }}
                     animate={{ scaleX: 1 }}
-                    transition={{ duration: SLIDE_MS / 1000, ease: 'linear' }}
+                    transition={{ duration: paused ? 0 : SLIDE_MS / 1000, ease: 'linear' }}
                   />
                 )}
               </button>
@@ -102,7 +131,7 @@ export function HeroWindow() {
           >
             <p className="text-xs font-medium tracking-[0.2em] text-mist uppercase">{slide.hobby.name}</p>
             <p className="mt-1.5 mb-6 truncate text-lg font-semibold tracking-tight">{slide.title}</p>
-            <slide.Visual />
+            <SlideVisual project={slide.project} onOpenChange={setPopout} />
           </motion.div>
         </AnimatePresence>
       </div>

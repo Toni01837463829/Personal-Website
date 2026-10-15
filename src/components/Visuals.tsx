@@ -111,17 +111,53 @@ export function DashboardVisual() {
 
 const code: [string, string][][] = [
   [['// Delta zur besten Runde fürs Dashboard', 'text-mist']],
-  [['export function ', 'text-violet-600'], ['delta', 'text-sky-600'], ['(lap: Lap, best: Lap) {', 'text-ink']],
-  [['  const ', 'text-violet-600'], ['now = lap.sectors.', 'text-ink'], ['reduce', 'text-sky-600'], ['(sum, ', 'text-ink'], ['0', 'text-amber-600'], [')', 'text-ink']],
-  [['  const ', 'text-violet-600'], ['ref = best.sectors.', 'text-ink'], ['reduce', 'text-sky-600'], ['(sum, ', 'text-ink'], ['0', 'text-amber-600'], [')', 'text-ink']],
-  [['  return ', 'text-violet-600'], ['(now - ref).', 'text-ink'], ['toFixed', 'text-sky-600'], ['(', 'text-ink'], ['3', 'text-amber-600'], [')', 'text-ink']],
+  [
+    ['export function ', 'text-violet-600'],
+    ['delta', 'text-sky-600'],
+    ['(lap: Lap, best: Lap) {', 'text-ink'],
+  ],
+  [
+    ['  const ', 'text-violet-600'],
+    ['now = lap.sectors.', 'text-ink'],
+    ['reduce', 'text-sky-600'],
+    ['(sum, ', 'text-ink'],
+    ['0', 'text-amber-600'],
+    [')', 'text-ink'],
+  ],
+  [
+    ['  const ', 'text-violet-600'],
+    ['ref = best.sectors.', 'text-ink'],
+    ['reduce', 'text-sky-600'],
+    ['(sum, ', 'text-ink'],
+    ['0', 'text-amber-600'],
+    [')', 'text-ink'],
+  ],
+  [
+    ['  return ', 'text-violet-600'],
+    ['(now - ref).', 'text-ink'],
+    ['toFixed', 'text-sky-600'],
+    ['(', 'text-ink'],
+    ['3', 'text-amber-600'],
+    [')', 'text-ink'],
+  ],
   [['}', 'text-ink']],
 ]
 
-export function CodeVisual() {
+/** The code editor; with href it becomes a link that lifts and glows on hover. */
+export function CodeVisual({ href }: { href?: string }) {
+  const Root = href ? 'a' : 'div'
   return (
-    <div className="relative aspect-[4/3] w-full">
-      <div className="absolute inset-0 overflow-hidden rounded-2xl border border-stone bg-white">
+    <Root
+      {...(href ? { href, target: '_blank', rel: 'noreferrer', 'aria-label': 'Code auf GitHub ansehen' } : {})}
+      className="group relative block aspect-[4/3] w-full outline-none"
+    >
+      <div
+        className={`absolute inset-0 overflow-hidden rounded-2xl border border-stone bg-white transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(.22,1,.36,1)] ${
+          href
+            ? 'group-hover:-translate-y-1.5 group-hover:shadow-[0_0_0_6px_rgba(255,255,255,.7),0_0_50px_rgba(255,255,255,.9),0_40px_70px_-35px_rgba(17,21,28,.45)] group-focus-visible:-translate-y-1.5'
+            : ''
+        }`}
+      >
         <div className="flex border-b border-stone/70 bg-sand/60 text-xs">
           <span className="border-r border-stone/70 bg-white px-4 py-2.5 text-ink">delta.ts</span>
           <span className="px-4 py-2.5 text-mist">dashboard.tsx</span>
@@ -153,6 +189,11 @@ export function CodeVisual() {
             </motion.div>
           ))}
         </div>
+        {href && (
+          <span className="absolute bottom-4 left-1/2 flex -translate-x-1/2 translate-y-3 items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm whitespace-nowrap text-paper opacity-0 shadow-[0_16px_32px_-14px_rgba(17,21,28,.6)] transition-[opacity,transform] duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
+            Auf GitHub ansehen <span aria-hidden>↗</span>
+          </span>
+        )}
       </div>
       <Depth depth={2.4} className="absolute -right-4 -bottom-6 w-40">
         <motion.div
@@ -167,54 +208,6 @@ export function CodeVisual() {
           </p>
         </motion.div>
       </Depth>
-    </div>
-  )
-}
-
-export function GarminVisual() {
-  const fields = [
-    ['Leistung', '248', 'W'],
-    ['Herzfrequenz', '152', 'bpm'],
-    ['Trittfrequenz', '91', 'rpm'],
-    ['Zeit', '1:12:40', ''],
-  ]
-  return (
-    <div className="relative flex aspect-[4/3] w-full items-center justify-center">
-      <div className="h-full w-[58%] rounded-[2rem] border border-stone bg-[#1a1f27] p-3 shadow-[0_30px_60px_-30px_rgba(17,21,28,.5)]">
-        <div className="grid h-full grid-rows-[1.3fr_1fr_1fr] gap-px overflow-hidden rounded-[1.4rem] bg-stone">
-          <div className="flex flex-col items-center justify-center bg-paper">
-            <p className="text-[10px] tracking-widest text-mist uppercase">{fields[0][0]}</p>
-            <p className="font-mono text-5xl leading-tight">
-              {fields[0][1]}
-              <span className="ml-1 text-base text-mist">{fields[0][2]}</span>
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-px">
-            {fields.slice(1, 3).map(([label, value, unit]) => (
-              <div key={label} className="flex flex-col items-center justify-center bg-paper">
-                <p className="text-[9px] tracking-widest text-mist uppercase">{label}</p>
-                <p className="font-mono text-2xl">
-                  {value}
-                  <span className="ml-0.5 text-xs text-mist">{unit}</span>
-                </p>
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-col items-center justify-center bg-paper">
-            <p className="text-[9px] tracking-widest text-mist uppercase">{fields[3][0]}</p>
-            <p className="font-mono text-2xl">{fields[3][1]}</p>
-          </div>
-        </div>
-      </div>
-      <Depth depth={2.4} className="absolute right-0 bottom-6 w-40">
-        <div className="rounded-xl border border-stone bg-white p-4 shadow-[0_25px_50px_-20px_rgba(17,21,28,.35)]">
-          <p className="text-[10px] tracking-widest text-mist uppercase">Eigene Seite</p>
-          <p className="mt-1 text-sm font-medium">Intervall 3 / 5</p>
-          <span className="mt-3 block h-1.5 w-full overflow-hidden rounded bg-sand">
-            <span className="block h-full w-3/5 bg-ink" />
-          </span>
-        </div>
-      </Depth>
-    </div>
+    </Root>
   )
 }

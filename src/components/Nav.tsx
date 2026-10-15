@@ -5,7 +5,6 @@ const links = [
   { href: '#ueber-mich', label: 'Über mich' },
   { href: '#hobbys', label: 'Hobbys' },
   { href: '#projekte', label: 'Projekte' },
-  { href: '#kontakt', label: 'Kontakt' },
 ]
 
 export function Nav() {

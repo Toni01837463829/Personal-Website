@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform } from 'motion/react'
-import { useRef } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { HeroWindow } from '../components/HeroWindow'
 import { Depth } from '../components/Mouse'
 import { Rich } from '../components/Rich'
@@ -8,20 +8,41 @@ import { person } from '../content'
 
 const ease = [0.22, 1, 0.36, 1] as const
 
+/**
+ * Fades its content out only once it starts leaving past the top of the screen.
+ * Each column fades on its own, so on phones (where they stack) the window lower
+ * down stays clear while it is in the middle of the screen.
+ */
+function FadeOnLeave({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollY } = useScroll()
+  // How far the element has moved past the top of the screen, as a share of its height
+  const opacity = useTransform(scrollY, () => {
+    const r = ref.current?.getBoundingClientRect()
+    if (!r || r.height === 0) return 1
+    const passed = -r.top / r.height
+    return Math.min(1, Math.max(0, 1 - (passed - 0.3) / 0.6))
+  })
+  return (
+    <motion.div ref={ref} style={{ opacity }}>
+      {children}
+    </motion.div>
+  )
+}
+
 export function Hero() {
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const scale = useTransform(scrollYProgress, [0, 1], [1, 0.92])
-  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
 
   return (
     <section ref={ref} id="top" className="relative min-h-[100svh] overflow-hidden">
       <motion.div
-        style={{ scale, opacity }}
+        style={{ scale }}
         className="mx-auto grid min-h-[100svh] max-w-6xl items-center gap-16 px-6 pt-32 pb-24 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20 lg:pt-24"
       >
         {/* Left: name and tagline */}
-        <div>
+        <FadeOnLeave>
           <Depth depth={0.3}>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -70,20 +91,16 @@ export function Hero() {
               >
                 Projekte ansehen
               </a>
-              <a
-                href="#kontakt"
-                className="glass rounded-full px-6 py-3 text-sm text-ink transition-transform hover:-translate-y-0.5"
-              >
-                Kontakt
-              </a>
             </motion.div>
           </Depth>
-        </div>
+        </FadeOnLeave>
 
         {/* Right: animated window cycling through activities and projects */}
-        <Depth depth={0.5}>
-          <HeroWindow />
-        </Depth>
+        <FadeOnLeave>
+          <Depth depth={0.5}>
+            <HeroWindow />
+          </Depth>
+        </FadeOnLeave>
       </motion.div>
 
       {/* Scroll cue */}

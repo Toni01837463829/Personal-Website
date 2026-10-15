@@ -1,26 +1,49 @@
 import { motion, useScroll, useTransform } from 'motion/react'
 import { useRef } from 'react'
 import { accentVars } from '../chapters'
+import { GarminShowcase } from '../components/GarminShowcase'
 import { Depth } from '../components/Mouse'
+import { Portal } from '../components/Portal'
 import { Reveal } from '../components/Reveal'
 import { Rich } from '../components/Rich'
 import { Text3D } from '../components/Text3D'
 import { SectionTitle } from '../components/SectionTitle'
 import { TiltCard } from '../components/TiltCard'
-import { BrowserVisual, DashboardVisual, GarminVisual } from '../components/Visuals'
+import { BrowserVisual, DashboardVisual } from '../components/Visuals'
 import { hobbies, projects } from '../content'
 
+type Project = (typeof projects)[number]
+
+// Drawn previews sit in a tilting glass card; portals and the Garmin devices stand on their own.
 const visuals = {
   browser: BrowserVisual,
   dashboard: DashboardVisual,
-  garmin: GarminVisual,
 }
 
-function ProjectRow({ project, index }: { project: (typeof projects)[number]; index: number }) {
+function ProjectVisual({ project }: { project: Project }) {
+  if (project.visual === 'garmin') return <GarminShowcase />
+  if (project.visual === 'portal') {
+    return (
+      <Portal
+        image={import.meta.env.BASE_URL + project.image}
+        href={project.link}
+        label={project.title}
+        caption={project.caption}
+      />
+    )
+  }
+  const Visual = visuals[project.visual]
+  return (
+    <TiltCard className="p-6 md:p-8">
+      <Visual />
+    </TiltCard>
+  )
+}
+
+function ProjectRow({ project, index }: { project: Project; index: number }) {
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
   const y = useTransform(scrollYProgress, [0, 1], [80, -80])
-  const Visual = visuals[project.visual]
   const hobby = hobbies.find((h) => h.id === project.hobby)
   const flipped = index % 2 === 1
 
@@ -57,6 +80,8 @@ function ProjectRow({ project, index }: { project: (typeof projects)[number]; in
           {project.link ? (
             <a
               href={project.link}
+              target="_blank"
+              rel="noreferrer"
               className="mt-10 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm text-paper transition-transform hover:-translate-y-0.5"
             >
               Projekt ansehen <span aria-hidden>→</span>
@@ -69,9 +94,7 @@ function ProjectRow({ project, index }: { project: (typeof projects)[number]; in
 
       <motion.div style={{ y }} className={flipped ? 'md:order-1' : ''}>
         <Reveal delay={0.15}>
-          <TiltCard className="p-6 md:p-8">
-            <Visual />
-          </TiltCard>
+          <ProjectVisual project={project} />
         </Reveal>
       </motion.div>
     </article>

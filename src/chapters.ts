@@ -9,7 +9,6 @@ export const chapters = [
   { id: 'ueber-mich', label: 'Über mich', accent: ['#4338ca', '#0284c7'] },
   { id: 'hobbys', label: 'Hobbys', accent: ['#0e7490', '#059669'] },
   { id: 'projekte', label: 'Projekte', accent: ['#6d28d9', '#c026d3'] },
-  { id: 'kontakt', label: 'Kontakt', accent: ['#ea580c', '#e11d48'] },
 ] as const
 
 export type ChapterId = (typeof chapters)[number]['id']
