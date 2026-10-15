@@ -109,6 +109,68 @@ export function DashboardVisual() {
   )
 }
 
+const code: [string, string][][] = [
+  [['// Delta zur besten Runde fürs Dashboard', 'text-mist']],
+  [['export function ', 'text-violet-600'], ['delta', 'text-sky-600'], ['(lap: Lap, best: Lap) {', 'text-ink']],
+  [['  const ', 'text-violet-600'], ['now = lap.sectors.', 'text-ink'], ['reduce', 'text-sky-600'], ['(sum, ', 'text-ink'], ['0', 'text-amber-600'], [')', 'text-ink']],
+  [['  const ', 'text-violet-600'], ['ref = best.sectors.', 'text-ink'], ['reduce', 'text-sky-600'], ['(sum, ', 'text-ink'], ['0', 'text-amber-600'], [')', 'text-ink']],
+  [['  return ', 'text-violet-600'], ['(now - ref).', 'text-ink'], ['toFixed', 'text-sky-600'], ['(', 'text-ink'], ['3', 'text-amber-600'], [')', 'text-ink']],
+  [['}', 'text-ink']],
+]
+
+export function CodeVisual() {
+  return (
+    <div className="relative aspect-[4/3] w-full">
+      <div className="absolute inset-0 overflow-hidden rounded-2xl border border-stone bg-white">
+        <div className="flex border-b border-stone/70 bg-sand/60 text-xs">
+          <span className="border-r border-stone/70 bg-white px-4 py-2.5 text-ink">delta.ts</span>
+          <span className="px-4 py-2.5 text-mist">dashboard.tsx</span>
+        </div>
+        <div className="space-y-1.5 p-5 font-mono text-[13px] leading-relaxed">
+          {code.map((line, i) => (
+            <motion.div
+              key={i}
+              className="flex gap-4 whitespace-pre"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 + i * 0.22 }}
+            >
+              <span className="w-4 text-right text-stone select-none">{i + 1}</span>
+              <span>
+                {line.map(([text, cls], j) => (
+                  <span key={j} className={cls}>
+                    {text}
+                  </span>
+                ))}
+                {i === code.length - 1 && (
+                  <motion.span
+                    className="ml-0.5 inline-block h-4 w-px translate-y-0.5 bg-ink"
+                    animate={{ opacity: [1, 0, 1] }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                  />
+                )}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+      <Depth depth={2.4} className="absolute -right-4 -bottom-6 w-40">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.8, duration: 0.5 }}
+          className="rounded-xl border border-stone bg-white p-4 shadow-[0_25px_50px_-20px_rgba(17,21,28,.35)]"
+        >
+          <p className="text-[10px] tracking-widest text-mist uppercase">Build</p>
+          <p className="mt-1 flex items-center gap-2 text-sm font-medium">
+            <span className="h-2 w-2 rounded-full bg-emerald-500" /> Erfolgreich
+          </p>
+        </motion.div>
+      </Depth>
+    </div>
+  )
+}
+
 export function GarminVisual() {
   const fields = [
     ['Leistung', '248', 'W'],
