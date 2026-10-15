@@ -1,0 +1,54 @@
+# Builds the Vite site and publishes it to GitHub Pages
+# whenever something is pushed to the `deploy` branch.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [deploy]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time; a newer push cancels an older queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      - run: npm ci
+
+      # base_path is "/Personal-Website" for a project page, or "" with a custom domain.
+      - name: Build
+        run: npm run build -- --base="${{ steps.pages.outputs.base_path }}/"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
