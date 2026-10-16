@@ -20,11 +20,32 @@ export const about = {
 
 export type HobbyId = 'triathlon' | 'simracing' | 'coding' | 'feuerwehr'
 
-export const hobbies: { id: HobbyId; name: string; text: string }[] = [
-  { id: 'triathlon', name: 'Triathlon', text: 'Lorem ipsum dolor sit amet, **consectetur** adipiscing elit.' },
-  { id: 'simracing', name: 'Sim-Racing', text: 'Sed do eiusmod tempor incididunt ut labore, **et dolore magna.**' },
-  { id: 'coding', name: 'Coding', text: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco.' },
-  { id: 'feuerwehr', name: 'Freiwillige Feuerwehr', text: 'Duis aute irure dolor, **in reprehenderit** in voluptate velit esse.' },
+/** colors: the hobby's own accent pair, used for its screen in the hobbies section */
+export const hobbies: { id: HobbyId; name: string; text: string; colors: [string, string] }[] = [
+  {
+    id: 'triathlon',
+    name: 'Triathlon',
+    text: 'Lorem ipsum dolor sit amet, **consectetur** adipiscing elit.',
+    colors: ['#fc4c02', '#fbbf24'],
+  },
+  {
+    id: 'simracing',
+    name: 'Sim-Racing',
+    text: 'Sed do eiusmod tempor incididunt ut labore, **et dolore magna.**',
+    colors: ['#22c55e', '#0ea5e9'],
+  },
+  {
+    id: 'feuerwehr',
+    name: 'Freiwillige Feuerwehr',
+    text: 'Duis aute irure dolor, **in reprehenderit** in voluptate velit esse.',
+    colors: ['#ef4444', '#b91c1c'],
+  },
+  {
+    id: 'coding',
+    name: 'Coding',
+    text: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco.',
+    colors: ['#8b5cf6', '#c026d3'],
+  },
 ]
 
 export const projects: {

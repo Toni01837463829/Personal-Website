@@ -21,6 +21,8 @@ html {
   background: var(--color-paper);
   color: var(--color-ink);
   scroll-behavior: smooth;
+  /* Only the hobby screens set snap points, so this nudges nothing else */
+  scroll-snap-type: y proximity;
 }
 
 body {
@@ -65,6 +67,36 @@ body {
 /* Solid accent color for small labels */
 @utility text-accent {
   color: var(--accent-a);
+}
+
+/* Inverted, dark surface for a section that stands on its own (see sections/Hobbies.tsx) */
+.theme-dark {
+  --color-paper: #0a0d12;
+  --color-sand: #141922;
+  --color-stone: #2a323e;
+  --color-ink: #f1f4f8;
+  --color-graphite: #a2acba;
+  --color-mist: #687282;
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.theme-dark ::selection {
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.theme-dark .glass {
+  background: rgb(255 255 255 / 0.035);
+  border-color: rgb(255 255 255 / 0.08);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 30px 60px -30px rgb(0 0 0 / 0.6);
+}
+
+/* The section accents are tuned for light paper; lift them so they read on dark */
+.theme-dark .text-accent {
+  color: color-mix(in srgb, var(--accent-a) 50%, white);
 }
 
 /* Faint rings that drift into a project portal (see components/Portal.tsx) */
