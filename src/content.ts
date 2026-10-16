@@ -44,7 +44,7 @@ export const hobbies: { id: HobbyId; name: string; text: string; colors: [string
   },
   {
     id: 'coding',
-    name: 'Coding',
+    name: 'Programmieren',
     text: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco.',
     colors: ['#8b5cf6', '#c026d3'],
   },

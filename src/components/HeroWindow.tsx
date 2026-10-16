@@ -13,7 +13,7 @@ const visuals = {
   garmin: GarminHeroVisual,
 }
 
-// One tab per activity; each shows its project, or the logo wall for "Coding".
+// One tab per activity; each shows its project, or the logo wall for "Programmieren".
 const slides = hobbies.map((h) => {
   const project = projects.find((p) => p.hobby === h.id)
   return { hobby: h, title: project?.title ?? 'Sprachen, Frameworks & Datenbanken', project }

@@ -52,11 +52,13 @@ const rows: { name: string; seconds: number; items: Tech[] }[] = [
   },
 ]
 
-function Card({ tech }: { tech: Tech }) {
+function Card({ tech, dark }: { tech: Tech; dark?: boolean }) {
   return (
     <div className="pr-3">
-      <div className="flex items-center gap-2.5 rounded-2xl bg-white py-2.5 pr-4 pl-2.5 shadow-[0_10px_24px_-14px_rgba(17,21,28,.45)] ring-1 ring-stone/80 transition-[translate,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[0_0_0_3px_color-mix(in_srgb,var(--accent-a)_22%,transparent),0_16px_28px_-14px_rgba(17,21,28,.5)] hover:ring-[color-mix(in_srgb,var(--accent-a)_55%,transparent)]">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sand/70">
+      <div className={`flex items-center gap-2.5 rounded-2xl py-2.5 pr-4 pl-2.5 ring-1 transition-[translate,box-shadow] ${
+        dark ? 'bg-[#10151c] shadow-[0_14px_28px_-14px_rgba(0,0,0,.9)] ring-white/10' : 'bg-white shadow-[0_10px_24px_-14px_rgba(17,21,28,.45)] ring-stone/80'
+      } duration-300 hover:-translate-y-1 hover:shadow-[0_0_0_3px_color-mix(in_srgb,var(--accent-a)_22%,transparent),0_16px_28px_-14px_rgba(17,21,28,.5)] hover:ring-[color-mix(in_srgb,var(--accent-a)_55%,transparent)]`}>
+        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${dark ? 'bg-white/90' : 'bg-sand/70'}`}>
           {tech.icon ? (
             <img src={tech.icon} alt="" draggable={false} className="h-6 w-6 select-none" />
           ) : (
@@ -72,9 +74,9 @@ function Card({ tech }: { tech: Tech }) {
 /**
  * What I work with, as a wall of logo cards on a tilted plane: one row per group,
  * gliding endlessly in alternating directions. The plane leans toward the mouse,
- * a hovered row stops and its card lifts.
+ * a hovered row stops and its card lifts. `dark` gives the cards a dark face.
  */
-export function TechWall() {
+export function TechWall({ dark }: { dark?: boolean }) {
   const reduced = useReducedMotion()
   const px = useMotionValue(0)
   const py = useMotionValue(0)
@@ -129,7 +131,7 @@ export function TechWall() {
                 }
               >
                 {[...half, ...half].map((t, i) => (
-                  <Card key={i} tech={t} />
+                  <Card key={i} tech={t} dark={dark} />
                 ))}
               </div>
             </motion.div>

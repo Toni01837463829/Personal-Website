@@ -1,4 +1,4 @@
-import { motion, useMotionValueEvent, useScroll, useSpring, useTransform } from 'motion/react'
+import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react'
 import { useRef, useState, type CSSProperties } from 'react'
 import { accentVars } from '../chapters'
 import { ActivityWall } from '../components/ActivityWall'
@@ -6,6 +6,7 @@ import { FeuerwehrShowcase } from '../components/FeuerwehrShowcase'
 import { HobbyIcon } from '../components/Icons'
 import { SimRacingShowcase } from '../components/SimRacingShowcase'
 import { StravaBadge } from '../components/StravaBadge'
+import { TechWall } from '../components/TechWall'
 import { Rich } from '../components/Rich'
 import { Text3D } from '../components/Text3D'
 import { hobbies, projects } from '../content'
@@ -125,6 +126,7 @@ function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index:
             <Rich text={hobby.text} />
           </p>
           {hobby.id === 'triathlon' && <StravaBadge />}
+          {hobby.id === 'coding' && <ScrollHint />}
           {count > 0 && (
             <a
               href={`#projekt-${hobby.id}`}
@@ -149,6 +151,13 @@ function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index:
           <div className="hidden md:block">
             <SimRacingShowcase />
           </div>
+        ) : hobby.id === 'coding' ? (
+          // The logo wall from the hero, with dark cards and soft edges
+          <div className="relative hidden aspect-[4/3] md:block">
+            <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_75%_70%_at_50%_50%,#000_55%,transparent_100%)]">
+              <TechWall dark />
+            </div>
+          </div>
         ) : hobby.id === 'feuerwehr' ? (
           <div className="hidden md:block">
             <FeuerwehrShowcase />
@@ -164,5 +173,35 @@ function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index:
         )}
       </div>
     </article>
+  )
+}
+
+/** The last hobby hands over to the projects: an invitation to keep scrolling, with a bobbing arrow. */
+function ScrollHint() {
+  const reduced = useReducedMotion()
+  return (
+    <a
+      href="#projekte"
+      className="group mt-8 inline-flex items-center gap-3 rounded-full border border-white/15 bg-[#05070a] py-2.5 pr-2.5 pl-5 text-sm font-medium text-ink shadow-[0_12px_30px_-12px_rgba(0,0,0,.9)] transition-colors hover:border-(--accent-a)/60"
+    >
+      Scrollen, um meine Projekte zu sehen
+      <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/10 transition-colors group-hover:bg-(--accent-a) group-hover:text-white">
+        <motion.svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+          animate={reduced ? undefined : { y: [-3, 3, -3] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <path d="M7 1.5v10M2.5 7.5 7 12l4.5-4.5" />
+        </motion.svg>
+      </span>
+    </a>
   )
 }
