@@ -14,6 +14,7 @@ import {
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent,
+  type ReactNode,
 } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -32,16 +33,22 @@ const PASS_MS = 420 // how long passing through takes before the popout opens
  * the portal's colors closes in around it and faint rings drift into
  * the depth. On click the page rushes at you. With a link that opens the site; without
  * one, the screenshot opens up in front of the page.
+ * Instead of a screenshot it can hold any content (children), which gets the same hover
+ * effect and opens up the same way. `dark` swaps the white frame for a dark one.
  */
 export function Portal({
   image,
+  children,
+  dark,
   label,
   href,
   caption,
   colors = accentColors,
   onOpenChange,
 }: {
-  image: string
+  image?: string
+  children?: ReactNode
+  dark?: boolean
   label: string
   href?: string
   caption?: string
@@ -72,7 +79,9 @@ export function Portal({
   const oy = useTransform(sy, (v) => v * 100)
   const origin = useMotionTemplate`${ox}% ${oy}%`
   // Light closing in around the mouse: clear in the middle, tinted toward the edges
-  const tunnel = useMotionTemplate`radial-gradient(ellipse 70% 70% at ${ox}% ${oy}%, transparent 40%, color-mix(in srgb, var(--p2) 10%, rgba(255,255,255,.25)) 75%, color-mix(in srgb, var(--p1) 12%, rgba(255,255,255,.6)) 100%)`
+  const lightTunnel = useMotionTemplate`radial-gradient(ellipse 70% 70% at ${ox}% ${oy}%, transparent 40%, color-mix(in srgb, var(--p2) 10%, rgba(255,255,255,.25)) 75%, color-mix(in srgb, var(--p1) 12%, rgba(255,255,255,.6)) 100%)`
+  const darkTunnel = useMotionTemplate`radial-gradient(ellipse 70% 70% at ${ox}% ${oy}%, transparent 40%, color-mix(in srgb, var(--p2) 16%, transparent) 75%, color-mix(in srgb, var(--p1) 32%, transparent) 100%)`
+  const tunnel = dark ? darkTunnel : lightTunnel
 
   const onEnter = () => setOpen(true)
   const onMove = (e: PointerEvent<HTMLElement>) => {
@@ -94,7 +103,7 @@ export function Portal({
   }
 
   const expand = () => {
-    if (!frameRef.current) return
+    if (!frameRef.current || (!image && !children)) return
     const rect = frameRef.current.getBoundingClientRect()
     passThrough()
     window.setTimeout(
@@ -112,18 +121,18 @@ export function Portal({
   const linkProps = href
     ? { href, target: '_blank', rel: 'noreferrer', 'aria-label': `${label} öffnen`, onClick: passThrough }
     : {
-        role: 'button',
-        tabIndex: 0,
-        'data-cursor': '⤢',
-        'aria-label': `${label} vergrößern`,
-        onClick: expand,
-        onKeyDown: (e: ReactKeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            expand()
-          }
-        },
-      }
+          role: 'button',
+          tabIndex: 0,
+          'data-cursor': '⤢',
+          'aria-label': `${label} vergrößern`,
+          onClick: expand,
+          onKeyDown: (e: ReactKeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              expand()
+            }
+          },
+        }
 
   return (
     <div ref={frameRef} style={{ perspective: 1200, ...colorVars(colors) }}>
@@ -137,32 +146,60 @@ export function Portal({
         style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
         animate={{
           scale: pull ? 1.01 : 1,
-          boxShadow: open
-            ? '0 0 0 5px rgba(255,255,255,.5), 0 0 40px 0 rgba(255,255,255,.7), 0 40px 90px -40px rgba(17,21,28,.42)'
-            : '0 0 0 0px rgba(255,255,255,0), 0 0 0 0 rgba(255,255,255,0), 0 30px 80px -40px rgba(17,21,28,.35)',
+          boxShadow: dark
+            ? open
+              ? '0 0 0 4px rgba(255,255,255,.1), 0 0 50px 0 rgba(255,255,255,.08), 0 40px 90px -40px rgba(0,0,0,.9)'
+              : '0 0 0 0px rgba(255,255,255,0), 0 0 0 0 rgba(255,255,255,0), 0 30px 80px -40px rgba(0,0,0,.8)'
+            : open
+              ? '0 0 0 5px rgba(255,255,255,.5), 0 0 40px 0 rgba(255,255,255,.7), 0 40px 90px -40px rgba(17,21,28,.42)'
+              : '0 0 0 0px rgba(255,255,255,0), 0 0 0 0 rgba(255,255,255,0), 0 30px 80px -40px rgba(17,21,28,.35)',
         }}
         transition={{ type: 'spring', stiffness: 200, damping: 22 }}
-        className={`relative block rounded-[2rem] bg-white p-2.5 ring-1 ring-stone/60 outline-none ${
+        className={`relative block rounded-[2rem] p-2.5 ring-1 outline-none ${dark ? 'bg-[#0c1016] ring-white/10' : 'bg-white ring-stone/60'} ${
           from ? 'invisible' : ''
         }`}
       >
-        {/* The window into the other side */}
-        <div className="relative aspect-video overflow-hidden rounded-[1.4rem] bg-ink">
-          <motion.img
-            src={image}
-            alt={`Vorschau: ${label}`}
-            loading="lazy"
-            draggable={false}
-            className="h-full w-full object-cover object-top select-none"
-            style={{ transformOrigin: origin }}
-            animate={{
-              scale: passing ? 1.3 : pull ? 1.08 : 1,
+        {/* Dark frames get their own glow in the portal's colors */}
+        {dark && (
+          <motion.div
+            aria-hidden
+            className="pointer-events-none absolute -inset-px rounded-[2rem]"
+            style={{
+              boxShadow:
+                '0 0 0 1px color-mix(in srgb, var(--p1) 55%, transparent), 0 0 45px -5px color-mix(in srgb, var(--p1) 45%, transparent)',
             }}
-            transition={{
-              duration: passing ? PASS_MS / 1000 : 1.1,
-              ease: passing ? [0.55, 0, 0.75, 0.2] : [0.22, 1, 0.36, 1],
-            }}
+            animate={{ opacity: open ? 1 : 0 }}
+            transition={{ duration: 0.4 }}
           />
+        )}
+        {/* The window into the other side */}
+        <div className={`relative aspect-video overflow-hidden rounded-[1.4rem] ${dark ? 'bg-[#080b10]' : 'bg-ink'}`}>
+          {image ? (
+            <motion.img
+              src={image}
+              alt={`Vorschau: ${label}`}
+              loading="lazy"
+              draggable={false}
+              className="h-full w-full object-cover object-top select-none"
+              style={{ transformOrigin: origin }}
+              animate={{
+                scale: passing ? 1.3 : pull ? 1.08 : 1,
+              }}
+              transition={{
+                duration: passing ? PASS_MS / 1000 : 1.1,
+                ease: passing ? [0.55, 0, 0.75, 0.2] : [0.22, 1, 0.36, 1],
+              }}
+            />
+          ) : (
+            <motion.div
+              className="h-full w-full"
+              style={{ transformOrigin: origin }}
+              animate={{ scale: pull ? 1.08 : 1 }}
+              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {children}
+            </motion.div>
+          )}
 
           {/* Tinted light closing in around the mouse */}
           <motion.div
@@ -204,27 +241,29 @@ export function Portal({
             className="pointer-events-none absolute inset-0 rounded-[1.4rem] shadow-[inset_0_0_0_1px_rgba(17,21,28,.08),inset_0_10px_30px_-10px_rgba(17,21,28,.35)]"
           />
 
-          <motion.span
-            className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium whitespace-nowrap text-ink shadow-[0_20px_40px_-15px_rgba(17,21,28,.45)] backdrop-blur"
-            initial={false}
-            animate={{ opacity: open && !passing ? 1 : 0, y: open && !passing ? 0 : 8 }}
-            transition={{ type: 'spring', stiffness: 260, damping: 24, delay: open ? 0.1 : 0 }}
-          >
-            <span
-              aria-hidden
-              className="h-2 w-2 rounded-full"
-              style={{ background: 'linear-gradient(135deg, var(--p1), var(--p2), var(--p3))' }}
-            />
-            {href ? (
-              <>
-                Seite betreten <span aria-hidden>↗</span>
-              </>
-            ) : (
-              <>
-                Ansehen <span aria-hidden>⤢</span>
-              </>
-            )}
-          </motion.span>
+          {(image || children) && (
+            <motion.span
+              className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium whitespace-nowrap text-ink shadow-[0_20px_40px_-15px_rgba(17,21,28,.45)] backdrop-blur"
+              initial={false}
+              animate={{ opacity: open && !passing ? 1 : 0, y: open && !passing ? 0 : 8 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 24, delay: open ? 0.1 : 0 }}
+            >
+              <span
+                aria-hidden
+                className="h-2 w-2 rounded-full"
+                style={{ background: 'linear-gradient(135deg, var(--p1), var(--p2), var(--p3))' }}
+              />
+              {href ? (
+                <>
+                  Seite betreten <span aria-hidden>↗</span>
+                </>
+              ) : (
+                <>
+                  Ansehen <span aria-hidden>⤢</span>
+                </>
+              )}
+            </motion.span>
+          )}
         </div>
 
         <div className="flex items-center justify-between px-2.5 pt-2.5 pb-1 text-sm text-mist">
@@ -248,12 +287,15 @@ export function Portal({
           {expanded && from && (
             <Expanded
               image={image}
+              dark={dark}
               label={label}
               caption={caption ?? label}
               colors={colors}
               from={from}
               onClose={() => setExpanded(false)}
-            />
+            >
+              {children}
+            </Expanded>
           )}
         </AnimatePresence>,
         document.body,
@@ -269,13 +311,17 @@ export function Portal({
  */
 function Expanded({
   image,
+  children,
+  dark,
   label,
   caption,
   colors,
   from,
   onClose,
 }: {
-  image: string
+  image?: string
+  children?: ReactNode
+  dark?: boolean
   label: string
   caption: string
   colors: PortalColors
@@ -320,15 +366,22 @@ function Expanded({
   const vw = window.innerWidth
   const vh = window.innerHeight
   const ratio = from.height / from.width
-  const width = Math.min(vw - 32, 880, (vh * 0.62) / ratio)
+  // Drawn screens are dense, so they get more room than screenshots
+  const width = image ? Math.min(vw - 32, 880, (vh * 0.62) / ratio) : Math.min(vw - 32, 1200, (vh * 0.86) / ratio)
   const to = { left: (vw - width) / 2, top: (vh - width * ratio) / 2, width }
   const start = { left: from.left, top: from.top, width: from.width }
   const fly = reduced ? { duration: 0.2 } : { type: 'spring' as const, stiffness: 170, damping: 24 }
 
   return (
-    <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true" aria-label={label} style={colorVars(colors)}>
+    <div
+      className="fixed inset-0 z-[90]"
+      role="dialog"
+      aria-modal="true"
+      aria-label={label}
+      style={{ ...colorVars(colors), ...(dark && ({ '--accent-a': colors[0], '--accent-b': colors[1] } as CSSProperties)) }}
+    >
       <motion.div
-        className="absolute inset-0 bg-paper/50 backdrop-blur-md"
+        className={`absolute inset-0 backdrop-blur-md ${dark ? 'bg-[#05070a]/65' : 'bg-paper/50'}`}
         data-cursor="✕"
         onClick={onClose}
         initial={{ opacity: 0 }}
@@ -354,21 +407,29 @@ function Expanded({
           transition={fly}
         >
           <motion.div
-            className="rounded-[2rem] bg-white p-2.5 shadow-[0_0_50px_rgba(255,255,255,.7),0_60px_110px_-50px_rgba(17,21,28,.55)] ring-1 ring-stone/60"
+            className={`rounded-[2rem] p-2.5 ring-1 ${
+              dark
+                ? 'theme-dark bg-[#0c1016]! shadow-[0_0_60px_-10px_color-mix(in_srgb,var(--p1)_40%,transparent),0_60px_110px_-50px_rgba(0,0,0,.9)] ring-white/10'
+                : 'bg-white shadow-[0_0_50px_rgba(255,255,255,.7),0_60px_110px_-50px_rgba(17,21,28,.55)] ring-stone/60'
+            }`}
             animate={{ y: reduced ? 0 : [0, -6, 0] }}
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <div className="relative aspect-video overflow-hidden rounded-[1.4rem] bg-ink">
-              <motion.img
-                src={image}
-                alt={label}
-                draggable={false}
-                className="h-full w-full object-cover object-top select-none"
-                style={{ x: imgX, y: imgY }}
-                initial={reduced ? false : { scale: 1.2 }}
-                animate={{ scale: 1.04 }}
-                transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              />
+            <div className={`relative aspect-video overflow-hidden rounded-[1.4rem] ${dark ? 'bg-[#080b10]' : 'bg-ink'}`}>
+              {image ? (
+                <motion.img
+                  src={image}
+                  alt={label}
+                  draggable={false}
+                  className="h-full w-full object-cover object-top select-none"
+                  style={{ x: imgX, y: imgY }}
+                  initial={reduced ? false : { scale: 1.2 }}
+                  animate={{ scale: 1.04 }}
+                  transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                />
+              ) : (
+                <div className="h-full w-full">{children}</div>
+              )}
               <motion.div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: sheen }} />
               <div
                 aria-hidden
@@ -387,7 +448,9 @@ function Expanded({
                 type="button"
                 onClick={onClose}
                 aria-label="Schließen"
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-sand text-graphite transition-colors hover:bg-stone hover:text-ink"
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-graphite transition-colors hover:text-ink ${
+                  dark ? 'bg-white/10 hover:bg-white/20' : 'bg-sand hover:bg-stone'
+                }`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1, transition: { delay: 0.25 } }}
                 exit={{ opacity: 0, transition: { duration: 0.1 } }}

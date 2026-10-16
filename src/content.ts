@@ -33,7 +33,7 @@ export const hobbies: { id: HobbyId; name: string; text: string; colors: [string
   {
     id: 'simracing',
     name: 'Sim-Racing',
-    text: 'Sed do eiusmod tempor incididunt ut labore, **et dolore magna.**',
+    text: 'Viel zu viel Zeit verbracht, **mittelgut** zu werden.',
     colors: ['#22c55e', '#0ea5e9'],
   },
   {
@@ -139,6 +139,22 @@ export type Activity = {
 // Strava activities on the triathlon screen, generated from a Strava export by
 // scripts/strava.mjs (npm run strava)
 export const stravaActivities = stravaData as Activity[]
+
+/** The sim-racing screen: the games circling (Steam store banners, © their publishers) and the slides in the middle */
+export const simracing = {
+  games: [
+    { name: 'Le Mans Ultimate', image: 'simracing/lmu.jpg' },
+    { name: 'Assetto Corsa EVO', image: 'simracing/acevo.jpg' },
+    { name: 'Assetto Corsa Competizione', image: 'simracing/acc.jpg' },
+    { name: 'Assetto Corsa', image: 'simracing/ac.jpg' },
+  ],
+  // Slides without an image show a drawn stand-in; add a screenshot path to replace it
+  slides: [
+    { id: 'telemetry' as const, label: 'Telemetrie', caption: 'Runde im Detail', image: undefined as string | undefined },
+    { id: 'setup' as const, label: 'Car Setup', caption: 'GT3 · Trocken', image: undefined as string | undefined },
+    { id: 'dashboard' as const, label: 'Dashboard', caption: 'Mein Live-Dashboard', image: 'projects/simracing-dashboard.webp' as string | undefined },
+  ],
+}
 
 /** The Strava badge and wall on the triathlon screen */
 export const strava = {

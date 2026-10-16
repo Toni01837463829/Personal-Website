@@ -3,6 +3,7 @@ import { useRef, useState, type CSSProperties } from 'react'
 import { accentVars } from '../chapters'
 import { ActivityWall } from '../components/ActivityWall'
 import { HobbyIcon } from '../components/Icons'
+import { SimRacingShowcase } from '../components/SimRacingShowcase'
 import { StravaBadge } from '../components/StravaBadge'
 import { Rich } from '../components/Rich'
 import { Text3D } from '../components/Text3D'
@@ -142,6 +143,10 @@ function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index:
         {hobby.id === 'triathlon' ? (
           <div className="hidden md:block">
             <ActivityWall />
+          </div>
+        ) : hobby.id === 'simracing' ? (
+          <div className="hidden md:block">
+            <SimRacingShowcase />
           </div>
         ) : (
           // Placeholder stage for the hobby's own visual
