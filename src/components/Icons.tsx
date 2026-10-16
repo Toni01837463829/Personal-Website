@@ -1,4 +1,5 @@
-import type { HobbyId } from '../content'
+import type { ReactNode } from 'react'
+import type { HobbyId, Sport } from '../content'
 
 const common = {
   width: 40,
@@ -14,13 +15,18 @@ const common = {
 export function HobbyIcon({ id }: { id: HobbyId }) {
   switch (id) {
     case 'triathlon':
-      // wave, wheel, footstep
+      // swim, bike and run, the three sport icons shrunk into a triangle
       return (
         <svg {...common} aria-hidden>
-          <path d="M4 30c3-3 6-3 9 0s6 3 9 0 6-3 9 0 3 1 5 1" />
-          <circle cx="13" cy="15" r="7" />
-          <circle cx="13" cy="15" r="1" />
-          <path d="M28 6c2 0 4 2 4 5s-2 6-4 6-3-2-3-5 1-6 3-6z" />
+          <g transform="translate(0 0) scale(0.5)" strokeWidth={common.strokeWidth * 2}>
+            {sportShapes.swim}
+          </g>
+          <g transform="translate(20 0) scale(0.5)" strokeWidth={common.strokeWidth * 2}>
+            {sportShapes.run}
+          </g>
+          <g transform="translate(10 18) scale(0.5)" strokeWidth={common.strokeWidth * 2}>
+            {sportShapes.bike}
+          </g>
         </svg>
       )
     case 'simracing':
@@ -48,4 +54,37 @@ export function HobbyIcon({ id }: { id: HobbyId }) {
         </svg>
       )
   }
+}
+
+const sportShapes: Record<Sport, ReactNode> = {
+  // swimmer over two waves
+  swim: (
+    <>
+      <circle cx="27" cy="11" r="3" />
+      <path d="M8 21l8-6 5 4 5-3" />
+      <path d="M4 26c3-3 6-3 9 0s6 3 9 0 6-3 9 0 3 1 5 1M4 32c3-3 6-3 9 0s6 3 9 0 6-3 9 0 3 1 5 1" />
+    </>
+  ),
+  bike: (
+    <>
+      <circle cx="10" cy="27" r="6" />
+      <circle cx="30" cy="27" r="6" />
+      <path d="M10 27l6-11h10l4 11M16 16l5 11h-11M19 12h-5M26 16l-1-5h4" />
+    </>
+  ),
+  // running shoe
+  run: (
+    <>
+      <path d="M6 28c0-5 1-9 3-13 2 2 5 3 8 2l3 5c4 1 9 2 12 4 2 1 3 3 3 5H8c-1 0-2-1-2-3z" />
+      <path d="M6 31h29M18 19l-2 2M20 22l-2 2M23 23l-1 2" />
+    </>
+  ),
+}
+
+export function SportIcon({ sport }: { sport: Sport }) {
+  return (
+    <svg {...common} aria-hidden>
+      {sportShapes[sport]}
+    </svg>
+  )
 }

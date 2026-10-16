@@ -1,7 +1,9 @@
 import { motion, useMotionValueEvent, useScroll, useSpring, useTransform } from 'motion/react'
 import { useRef, useState, type CSSProperties } from 'react'
 import { accentVars } from '../chapters'
+import { ActivityWall } from '../components/ActivityWall'
 import { HobbyIcon } from '../components/Icons'
+import { StravaBadge } from '../components/StravaBadge'
 import { Rich } from '../components/Rich'
 import { Text3D } from '../components/Text3D'
 import { hobbies, projects } from '../content'
@@ -120,6 +122,7 @@ function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index:
           <p className="mt-6 max-w-md text-lg leading-relaxed text-graphite">
             <Rich text={hobby.text} />
           </p>
+          {hobby.id === 'triathlon' && <StravaBadge />}
           {count > 0 && (
             <a
               href={`#projekt-${hobby.id}`}
@@ -136,13 +139,19 @@ function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index:
           )}
         </div>
 
-        {/* Placeholder stage for the hobby's own visual */}
-        <div className="glass relative hidden aspect-[4/3] items-center justify-center overflow-hidden rounded-3xl md:flex">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,color-mix(in_srgb,var(--accent-a)_30%,transparent),transparent_65%)]" />
-          <div className="relative scale-[3] text-(--accent-a) opacity-70">
-            <HobbyIcon id={hobby.id} />
+        {hobby.id === 'triathlon' ? (
+          <div className="hidden md:block">
+            <ActivityWall />
           </div>
-        </div>
+        ) : (
+          // Placeholder stage for the hobby's own visual
+          <div className="glass relative hidden aspect-[4/3] items-center justify-center overflow-hidden rounded-3xl md:flex">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,color-mix(in_srgb,var(--accent-a)_30%,transparent),transparent_65%)]" />
+            <div className="relative scale-[3] text-(--accent-a) opacity-70">
+              <HobbyIcon id={hobby.id} />
+            </div>
+          </div>
+        )}
       </div>
     </article>
   )

@@ -1,6 +1,8 @@
 // All texts of the page live here, so they can be changed without touching the layout.
 // Markup: **word** is set bold (see components/Rich.tsx).
 
+import stravaData from './data/strava.json'
+
 export const person = {
   name: 'Toni',
   tagline: 'Lorem ipsum dolor sit amet, **consectetur** adipiscing elit, sed do eiusmod tempor.',
@@ -25,7 +27,7 @@ export const hobbies: { id: HobbyId; name: string; text: string; colors: [string
   {
     id: 'triathlon',
     name: 'Triathlon',
-    text: 'Lorem ipsum dolor sit amet, **consectetur** adipiscing elit.',
+    text: '**Angehender Triathlet :)**',
     colors: ['#fc4c02', '#fbbf24'],
   },
   {
@@ -113,3 +115,34 @@ export const garminPages: { name: string; text: string; video: string; crop: { x
     crop: { x: 95, y: 111 },
   },
 ]
+
+export type Sport = 'swim' | 'bike' | 'run'
+
+export type Activity = {
+  id: string
+  sport: Sport
+  name: string
+  /** yyyy-mm-dd */
+  date: string
+  /** seconds */
+  movingTime: number
+  /** meters */
+  distance: number
+  elevationGain?: number
+  avgHr?: number
+  /** Shape of the route as x/y points in 0..1000, without the first and last kilometer */
+  route?: [number, number][]
+  /** Altitude in meters, sampled evenly over the activity */
+  elevation?: number[]
+}
+
+// Strava activities on the triathlon screen, generated from a Strava export by
+// scripts/strava.mjs (npm run strava)
+export const stravaActivities = stravaData as Activity[]
+
+/** The Strava badge and wall on the triathlon screen */
+export const strava = {
+  profile: 'https://www.strava.com/athletes/896347841',
+  badge: 'Mein Strava',
+  heading: 'Meine Strava-Aktivitäten',
+}

@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Raw Strava export (only the trimmed data in src/ is committed)
+export_*/
