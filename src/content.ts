@@ -5,7 +5,8 @@ import stravaData from './data/strava.json'
 
 export const person = {
   name: 'Toni',
-  tagline: 'Lorem ipsum dolor sit amet, **consectetur** adipiscing elit, sed do eiusmod tempor.',
+  /** Under the name: the small muted words, then the big word in the coding colors */
+  tagline: { small: ['(Professional)', '(Vibe)'], word: 'Coder' },
   github: 'https://github.com/Toni01837463829',
 }
 
@@ -45,7 +46,7 @@ export const hobbies: { id: HobbyId; name: string; text: string; colors: [string
   {
     id: 'coding',
     name: 'Programmieren',
-    text: 'Ut enim ad minim veniam, quis nostrud exercitation ullamco.',
+    text: '',
     colors: ['#8b5cf6', '#c026d3'],
   },
 ]

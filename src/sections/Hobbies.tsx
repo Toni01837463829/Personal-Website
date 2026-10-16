@@ -122,9 +122,11 @@ function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index:
               {hobby.name}
             </h3>
           </Text3D>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-graphite">
-            <Rich text={hobby.text} />
-          </p>
+          {hobby.text && (
+            <p className="mt-6 max-w-md text-lg leading-relaxed text-graphite">
+              <Rich text={hobby.text} />
+            </p>
+          )}
           {hobby.id === 'triathlon' && <StravaBadge />}
           {hobby.id === 'coding' && <ScrollHint />}
           {count > 0 && (

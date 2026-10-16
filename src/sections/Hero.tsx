@@ -2,11 +2,14 @@ import { motion, useScroll, useTransform } from 'motion/react'
 import { useRef, type ReactNode } from 'react'
 import { HeroWindow } from '../components/HeroWindow'
 import { Depth } from '../components/Mouse'
-import { Rich } from '../components/Rich'
+import { HobbyIcon } from '../components/Icons'
 import { Text3D } from '../components/Text3D'
-import { person } from '../content'
+import { hobbies, person } from '../content'
 
 const ease = [0.22, 1, 0.36, 1] as const
+
+// The big tagline word takes the colors of the coding hobby
+const coding = hobbies.find((h) => h.id === 'coding')!.colors
 
 /**
  * Fades its content out only once it starts leaving past the top of the screen.
@@ -73,26 +76,26 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.4, ease }}
-              className="mt-10 max-w-md text-lg leading-relaxed text-graphite md:text-xl"
+              className="mt-10 flex flex-wrap items-baseline gap-x-3 gap-y-1"
             >
-              <Rich text={person.tagline} />
+              {person.tagline.small.map((s) => (
+                <span key={s} className="text-lg text-mist md:text-xl">
+                  {s}
+                </span>
+              ))}
+              <span className="inline-flex items-center gap-3 self-center">
+                <span
+                  className="bg-clip-text pb-1 text-4xl leading-none font-semibold tracking-tight text-transparent md:text-5xl"
+                  style={{ backgroundImage: `linear-gradient(to right, ${coding[0]}, ${coding[1]})` }}
+                >
+                  {person.tagline.word}
+                </span>
+                <span className="h-10 w-10 md:h-12 md:w-12 [&>svg]:h-full [&>svg]:w-full" style={{ color: coding[0] }}>
+                  <HobbyIcon id="coding" />
+                </span>
+              </span>
             </motion.p>
           </Text3D>
-          <Depth depth={1}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.55, ease }}
-              className="mt-12 flex flex-wrap gap-3"
-            >
-              <a
-                href="#projekte"
-                className="rounded-full bg-ink px-6 py-3 text-sm text-paper transition-transform hover:-translate-y-0.5"
-              >
-                Lorem ipsum
-              </a>
-            </motion.div>
-          </Depth>
         </FadeOnLeave>
 
         {/* Right: animated window cycling through activities and projects */}
