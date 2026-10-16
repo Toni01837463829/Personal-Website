@@ -27,19 +27,19 @@ export const hobbies: { id: HobbyId; name: string; text: string; colors: [string
   {
     id: 'triathlon',
     name: 'Triathlon',
-    text: '**Angehender Triathlet :)**',
+    text: 'Angehender Triathlet :)',
     colors: ['#fc4c02', '#fbbf24'],
   },
   {
     id: 'simracing',
     name: 'Sim-Racing',
-    text: 'Viel zu viel Zeit verbracht, **mittelgut** zu werden.',
+    text: 'Viel zu viel Zeit verbracht, mittelgut zu werden.',
     colors: ['#22c55e', '#0ea5e9'],
   },
   {
     id: 'feuerwehr',
     name: 'Freiwillige Feuerwehr',
-    text: 'Duis aute irure dolor, **in reprehenderit** in voluptate velit esse.',
+    text: 'APTE: Bronze, APLE: Bronze. Erstellung und Hosting der Website der FF Pfaffenschlag.',
     colors: ['#ef4444', '#b91c1c'],
   },
   {
@@ -153,6 +153,14 @@ export const simracing = {
     { id: 'telemetry' as const, label: 'Telemetrie', caption: 'Runde im Detail', image: undefined as string | undefined },
     { id: 'setup' as const, label: 'Car Setup', caption: 'GT3 · Trocken', image: undefined as string | undefined },
     { id: 'dashboard' as const, label: 'Dashboard', caption: 'Mein Live-Dashboard', image: 'projects/simracing-dashboard.webp' as string | undefined },
+  ],
+}
+
+/** The Feuerwehr screen: badges from the training exams (Ausbildungsprüfungen), then the website */
+export const feuerwehr = {
+  medals: [
+    { short: 'APTE', name: 'Technischer Einsatz', level: 'Bronze', image: 'feuerwehr/apte-bronze.png', ratio: 129 / 162 },
+    { short: 'APLE', name: 'Löscheinsatz', level: 'Bronze', image: 'feuerwehr/aple-bronze.png', ratio: 98 / 158 },
   ],
 }
 

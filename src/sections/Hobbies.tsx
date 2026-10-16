@@ -2,6 +2,7 @@ import { motion, useMotionValueEvent, useScroll, useSpring, useTransform } from 
 import { useRef, useState, type CSSProperties } from 'react'
 import { accentVars } from '../chapters'
 import { ActivityWall } from '../components/ActivityWall'
+import { FeuerwehrShowcase } from '../components/FeuerwehrShowcase'
 import { HobbyIcon } from '../components/Icons'
 import { SimRacingShowcase } from '../components/SimRacingShowcase'
 import { StravaBadge } from '../components/StravaBadge'
@@ -147,6 +148,10 @@ function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index:
         ) : hobby.id === 'simracing' ? (
           <div className="hidden md:block">
             <SimRacingShowcase />
+          </div>
+        ) : hobby.id === 'feuerwehr' ? (
+          <div className="hidden md:block">
+            <FeuerwehrShowcase />
           </div>
         ) : (
           // Placeholder stage for the hobby's own visual
