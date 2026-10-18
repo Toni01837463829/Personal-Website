@@ -27,6 +27,10 @@ const colorVars = (c: PortalColors) => ({ '--p1': c[0], '--p2': c[1], '--p3': c[
 
 const PASS_MS = 420 // how long passing through takes before the popout opens
 
+// A screen recording plays as a silent loop in place of a screenshot
+const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src)
+const videoProps = { autoPlay: true, muted: true, loop: true, playsInline: true }
+
 /**
  * A clean white frame around a screenshot that behaves like a portal you get sucked
  * into: on hover the page zooms gently toward the mouse, a soft light tunnel with a hint of
@@ -174,7 +178,23 @@ export function Portal({
         )}
         {/* The window into the other side */}
         <div className={`relative aspect-video overflow-hidden rounded-[1.4rem] ${dark ? 'bg-[#080b10]' : 'bg-ink'}`}>
-          {image ? (
+          {image && isVideo(image) ? (
+            <motion.video
+              src={image}
+              aria-label={`Vorschau: ${label}`}
+              preload="metadata"
+              {...videoProps}
+              className="h-full w-full object-cover object-top select-none"
+              style={{ transformOrigin: origin }}
+              animate={{
+                scale: passing ? 1.3 : pull ? 1.08 : 1,
+              }}
+              transition={{
+                duration: passing ? PASS_MS / 1000 : 1.1,
+                ease: passing ? [0.55, 0, 0.75, 0.2] : [0.22, 1, 0.36, 1],
+              }}
+            />
+          ) : image ? (
             <motion.img
               src={image}
               alt={`Vorschau: ${label}`}
@@ -416,7 +436,18 @@ function Expanded({
             transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
           >
             <div className={`relative aspect-video overflow-hidden rounded-[1.4rem] ${dark ? 'bg-[#080b10]' : 'bg-ink'}`}>
-              {image ? (
+              {image && isVideo(image) ? (
+                <motion.video
+                  src={image}
+                  aria-label={label}
+                  {...videoProps}
+                  className="h-full w-full object-cover object-top select-none"
+                  style={{ x: imgX, y: imgY }}
+                  initial={reduced ? false : { scale: 1.2 }}
+                  animate={{ scale: 1.04 }}
+                  transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                />
+              ) : image ? (
                 <motion.img
                   src={image}
                   alt={label}
