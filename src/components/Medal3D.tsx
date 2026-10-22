@@ -1,4 +1,4 @@
-import { motion, useAnimationFrame, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
+import { motion, useAnimationFrame, useInView, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
 import { useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 
 const SLOW = 40 // degrees per second when left alone
@@ -18,9 +18,12 @@ export function Medal3D({ src, alt, height, ratio }: { src: string; alt: string;
   const speed = useRef(SLOW)
   const drag = useRef<{ x: number; t: number } | null>(null)
   const [hover, setHover] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  // Only spins while on screen
+  const visible = useInView(ref)
 
   useAnimationFrame((_, delta) => {
-    if (reduced || drag.current) return
+    if (!visible || reduced || drag.current) return
     // Ease toward the resting speed, so a flick coasts out
     const target = hover ? FAST : SLOW
     speed.current += (target - speed.current) * Math.min(1, delta / 700)
@@ -58,6 +61,7 @@ export function Medal3D({ src, alt, height, ratio }: { src: string; alt: string;
 
   return (
     <div
+      ref={ref}
       role="img"
       aria-label={alt}
       data-cursor="⟲"

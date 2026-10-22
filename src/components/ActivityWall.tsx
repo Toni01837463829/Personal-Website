@@ -35,7 +35,7 @@ export function ActivityWall() {
 
   return (
     <div ref={wall} style={{ perspective: 1200 }} className="relative z-10 mx-auto w-full max-w-[min(30rem,calc((100svh-19rem)*0.8))]">
-      {/* Accent light behind the glass, so the blur has something to catch */}
+      {/* Accent light behind the tiles, glowing through their tinted glass */}
       <div aria-hidden className="absolute inset-[12%] rounded-full bg-(--accent-a) opacity-30 blur-[90px]" />
       <h4 className="relative mb-5 flex items-center gap-2.5 text-lg font-semibold tracking-tight">
         <StravaLogo className="h-5 w-5 text-[#fc5200]" />
@@ -100,7 +100,7 @@ function ActivityTile({
       onFocus={(e) => onShow(e.currentTarget)}
       data-active={active || undefined}
       aria-label={`${sportName[activity.sport]}: ${activity.name}, ${km(activity.distance)} km, auf Strava ansehen`}
-      className="group relative block aspect-square w-full overflow-hidden rounded-xl border border-white/10 bg-[#0c1016]/85 shadow-[inset_0_1px_0_rgba(255,255,255,.12),0_24px_40px_-20px_rgba(0,0,0,.8)] backdrop-blur-xl transition-colors duration-300 outline-none data-active:border-(--accent-a)/60"
+      className="group relative block aspect-square w-full overflow-hidden rounded-xl border border-white/10 bg-[#0c1016]/85 shadow-[inset_0_1px_0_rgba(255,255,255,.12),0_24px_40px_-20px_rgba(0,0,0,.8)] transition-colors duration-300 outline-none data-active:border-(--accent-a)/60"
     >
       <div className="absolute inset-0 bg-linear-to-br from-(--accent-a)/10 via-transparent to-transparent" />
       <div

@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useAnimationFrame, useMotionValue, useReducedMotion, useTransform, type MotionValue } from 'motion/react'
+import { AnimatePresence, motion, useAnimationFrame, useInView, useMotionValue, useReducedMotion, useTransform, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { hobbies, projects, simracing } from '../content'
 import { Portal, type PortalColors } from './Portal'
@@ -22,13 +22,16 @@ export function SimRacingShowcase() {
   const reduced = useReducedMotion()
   const angle = useMotionValue(0)
   const paused = useRef(false)
+  const ref = useRef<HTMLDivElement>(null)
+  // Off screen (another hobby in view) the orbit stands still and costs nothing
+  const visible = useInView(ref)
 
   useAnimationFrame((_, delta) => {
-    if (!reduced && !paused.current) angle.set(angle.get() + (delta / 1000) * ((2 * Math.PI) / TURN_S))
+    if (visible && !reduced && !paused.current) angle.set(angle.get() + (delta / 1000) * ((2 * Math.PI) / TURN_S))
   })
 
   return (
-    <div className="relative mx-auto aspect-[100/96] w-full max-w-[38rem]">
+    <div ref={ref} className="relative mx-auto aspect-[100/96] w-full max-w-[38rem]">
       <div aria-hidden className="absolute inset-[15%] rounded-full bg-(--accent-a) opacity-25 blur-[100px]" />
       {/* The ring the games travel on */}
       <div aria-hidden className="absolute inset-x-[4%] inset-y-[6%] rounded-[50%] border border-white/[0.06]" />
@@ -55,22 +58,24 @@ function OrbitCover({
   offset: number
   onHover: (hovered: boolean) => void
 }) {
-  // Positions on an ellipse; sin > 0 is the front of the ring (bottom of the screen)
-  const left = useTransform(angle, (a) => `${50 + 46 * Math.cos(a + offset)}%`)
-  const top = useTransform(angle, (a) => `${50 + 44 * Math.sin(a + offset)}%`)
+  // Positions on an ellipse; sin > 0 is the front of the ring (bottom of the screen).
+  // A layer the size of the whole showcase is shifted by a share of its own size, so the
+  // orbit only moves a transform and never touches layout.
+  const x = useTransform(angle, (a) => `${46 * Math.cos(a + offset)}%`)
+  const y = useTransform(angle, (a) => `${44 * Math.sin(a + offset)}%`)
   const front = useTransform(angle, (a) => (Math.sin(a + offset) + 1) / 2)
   const scale = useTransform(front, (f) => 0.82 + f * 0.18)
   const opacity = useTransform(front, (f) => 0.55 + f * 0.45)
   const zIndex = useTransform(front, (f) => (f > 0.5 ? 20 : 0))
 
   return (
-    <motion.div style={{ left, top, zIndex }} className="absolute w-[28%] -translate-x-1/2 -translate-y-1/2">
+    <motion.div style={{ x, y, zIndex }} className="pointer-events-none absolute inset-0">
       <motion.div
         style={{ scale, opacity }}
         whileHover={{ scale: 1.1, opacity: 1 }}
         onPointerEnter={() => onHover(true)}
         onPointerLeave={() => onHover(false)}
-        className="group relative"
+        className="group pointer-events-auto absolute top-1/2 left-1/2 w-[28%] -translate-x-1/2 -translate-y-1/2"
       >
         <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0c1016] shadow-[0_24px_40px_-20px_rgba(0,0,0,.9)] transition-[border-color,box-shadow] duration-300 group-hover:border-(--accent-a)/60 group-hover:shadow-[0_20px_50px_-15px_color-mix(in_srgb,var(--accent-a)_50%,transparent)]">
           <img

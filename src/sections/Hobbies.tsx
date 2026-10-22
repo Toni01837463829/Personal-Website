@@ -1,5 +1,5 @@
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react'
-import { useRef, useState, type CSSProperties } from 'react'
+import { memo, useRef, useState, type CSSProperties } from 'react'
 import { accentVars } from '../chapters'
 import { ActivityWall } from '../components/ActivityWall'
 import { FeuerwehrShowcase } from '../components/FeuerwehrShowcase'
@@ -35,6 +35,7 @@ export function Hobbies() {
     <section
       id="hobbys"
       ref={ref}
+      data-opaque
       style={{ ...accentVars('hobbys'), height: `${n * 100}svh` }}
       className="theme-dark relative overflow-clip"
     >
@@ -44,7 +45,7 @@ export function Hobbies() {
       ))}
 
       <div className="sticky top-0 h-svh overflow-hidden">
-        <motion.div style={{ x, width: `${n * 100}%` }} className="flex h-full">
+        <motion.div style={{ x, width: `${n * 100}%` }} className="flex h-full will-change-transform">
           {hobbies.map((h, i) => (
             <HobbyScreen key={h.id} hobby={h} index={i} />
           ))}
@@ -81,8 +82,11 @@ export function Hobbies() {
   )
 }
 
-/** One hobby as a full screen: text on the left, an empty stage on the right for its own visual later. */
-function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index: number }) {
+/**
+ * One hobby as a full screen: text on the left, its own visual on the right. Memoized, so
+ * the counter changing while scrolling doesn't re-render every screen.
+ */
+const HobbyScreen = memo(function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index: number }) {
   const count = projects.filter((p) => p.hobby === hobby.id).length
   const [a, b] = hobby.colors
 
@@ -176,7 +180,7 @@ function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index:
       </div>
     </article>
   )
-}
+})
 
 /** The last hobby hands over to the projects: an invitation to keep scrolling, with a bobbing arrow. */
 function ScrollHint() {
