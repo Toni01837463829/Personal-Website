@@ -5,8 +5,6 @@ import stravaData from './data/strava.json'
 
 export const person = {
   name: 'Toni',
-  /** Under the name: the small muted words, then the big word in the coding colors */
-  tagline: { small: ['(Professional)', '(Vibe)'], word: 'Coder' },
   github: 'https://github.com/Toni01837463829',
 }
 
