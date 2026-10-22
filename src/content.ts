@@ -89,7 +89,7 @@ export const projects: {
   {
     title: 'Sim-Racing Dashboards',
     hobby: 'simracing',
-    text: 'Eigene Dashboards für den Simulator: Drehzahl, Gang, Rundenzeiten und Delta **auf einen Blick.**',
+    text: 'Eigene Dashboards für den Simulator: **Telemetrie**, Rundenzeiten, Abstände, Stint-Rechner, …',
     tags: ['Telemetrie', 'Live-Daten'],
     visual: 'portal',
     image: 'projects/simracing-dashboard.webp',
@@ -97,9 +97,9 @@ export const projects: {
     colors: ['#22c55e', '#22d3ee', '#a855f7'],
   },
   {
-    title: 'Garmin Edge 1030 Datenseiten',
+    title: 'Garmin Radcomputer-Datenseiten',
     hobby: 'triathlon',
-    text: 'Eigene Datenseiten für den Radcomputer, genau auf das Training abgestimmt.',
+    text: 'Eigene Datenseiten für den Radcomputer, abgestimmt auf Training und Rennen.',
     tags: ['Garmin Connect IQ', 'Training'],
     visual: 'garmin',
   },
@@ -110,7 +110,7 @@ export const projects: {
 export const garminPages: { name: string; text: string; video: string; crop: { x: number; y: number } }[] = [
   {
     name: 'Fahrt',
-    text: 'Zeit, Distanz, **Höhenprofil** und die Zonen der ganzen Fahrt auf einer Seite.',
+    text: 'Zeit, Distanz, **Höhenprofil**, Zonen, … auf einer Seite.',
     video: 'projects/garmin-1.mp4',
     crop: { x: 94, y: 112 },
   },
