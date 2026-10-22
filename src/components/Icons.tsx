@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import type { HobbyId, Sport } from '../content'
+import type { HobbyId, PathStep, Sport } from '../content'
 
 const common = {
   width: 40,
@@ -87,4 +87,42 @@ export function SportIcon({ sport }: { sport: Sport }) {
       {sportShapes[sport]}
     </svg>
   )
+}
+
+/** Icons for the stations of the timeline in the about section */
+export function PathIcon({ kind }: { kind: PathStep['kind'] }) {
+  switch (kind) {
+    case 'school':
+      // graduation cap
+      return (
+        <svg {...common} aria-hidden>
+          <path d="M3 16l17-7 17 7-17 7z" />
+          <path d="M11 19.5v7c0 2 4 4 9 4s9-2 9-4v-7M37 16v9" />
+        </svg>
+      )
+    case 'job':
+      // briefcase
+      return (
+        <svg {...common} aria-hidden>
+          <rect x="5" y="12" width="30" height="20" rx="3" />
+          <path d="M15 12V9a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3M5 20h30M18 20v3h4v-3" />
+        </svg>
+      )
+    case 'military':
+      // shield with a star
+      return (
+        <svg {...common} aria-hidden>
+          <path d="M20 5l13 5v9c0 8-6 13-13 16C13 32 7 27 7 19v-9z" />
+          <path d="M20 13l2 4.5 4.8.4-3.7 3.1 1.2 4.7-4.3-2.5-4.3 2.5 1.2-4.7-3.7-3.1 4.8-.4z" />
+        </svg>
+      )
+    case 'study':
+      // two sparkles, for the AI studies
+      return (
+        <svg {...common} aria-hidden>
+          <path d="M17 6c1 6 4 9 10 10-6 1-9 4-10 10-1-6-4-9-10-10 6-1 9-4 10-10z" />
+          <path d="M30 24c.5 3 2 4.5 5 5-3 .5-4.5 2-5 5-.5-3-2-4.5-5-5 3-.5 4.5-2 5-5z" />
+        </svg>
+      )
+  }
 }

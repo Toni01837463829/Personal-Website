@@ -9,14 +9,27 @@ export const person = {
 }
 
 export const about = {
-  text: [
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    'Ut enim ad minim veniam, quis nostrud **exercitation ullamco.**',
-  ],
+  /**
+   * The timeline, oldest first. from/to are the first and last month ('YYYY-MM'); without
+   * `to` it is still going on. kind picks the icon and color.
+   */
   path: [
-    { place: 'HTL Krems', detail: 'Ausbildung', years: '' },
-    { place: 'FH Oberösterreich', detail: 'AI Solutions', years: '' },
-  ],
+    { place: 'HTL Krems', detail: 'Ausbildung', from: '2019-09', to: '2024-06', kind: 'school' },
+    { place: 'WEB', detail: 'Ferialjob', from: '2024-07', to: '2024-08', kind: 'job' },
+    { place: 'Bundesheer', detail: 'Grundwehrdienst', from: '2024-09', to: '2025-02', kind: 'military' },
+    { place: 'Leyrer + Graf', detail: 'IT-Support', from: '2025-03', to: '2025-09', kind: 'job' },
+    { place: 'FH Oberösterreich', detail: 'AI Solutions, 1. Jahr', from: '2025-10', to: '2026-06', kind: 'study' },
+    { place: 'Fab4minds', detail: 'Praktikum', from: '2026-07', to: '2026-09', kind: 'job' },
+    { place: 'FH Oberösterreich', detail: 'AI Solutions, 2. Jahr', from: '2026-10', kind: 'study' },
+  ] as PathStep[],
+}
+
+export type PathStep = {
+  place: string
+  detail: string
+  from: string
+  to?: string
+  kind: 'school' | 'job' | 'military' | 'study'
 }
 
 export type HobbyId = 'triathlon' | 'simracing' | 'coding' | 'feuerwehr'
