@@ -103,8 +103,8 @@ export function GarminShowcase() {
     <div ref={ref}>
       <div className="relative aspect-[5/4] w-full" style={{ perspective: 1400 }}>
         {/* Soft floor shadow and light behind the devices */}
-        <div aria-hidden className="absolute inset-x-[10%] bottom-[2%] h-[12%] rounded-[50%] bg-ink/15 blur-2xl" />
-        <div aria-hidden className="absolute inset-[15%] rounded-full bg-white/80 blur-3xl" />
+        <div aria-hidden className="absolute inset-x-[10%] bottom-[2%] h-[12%] rounded-[50%] bg-ink/15 [mask-image:radial-gradient(closest-side,#000,transparent)]" />
+        <div aria-hidden className="absolute inset-[15%] rounded-full bg-white/80 [mask-image:radial-gradient(closest-side,#000,transparent)]" />
 
         {garminPages.map((page, i) => {
           // -1 left, 0 front, 1 right
@@ -200,12 +200,14 @@ export function GarminShowcase() {
  */
 export function GarminHeroVisual() {
   const reduced = useReducedMotion()
+  const ref = useRef<HTMLDivElement>(null)
+  const visible = useInView(ref)
   const page = garminPages[2]
   return (
-    <div className="relative aspect-[4/3] w-full" style={{ perspective: 1200 }}>
+    <div ref={ref} className="relative aspect-[4/3] w-full" style={{ perspective: 1200 }}>
       <div
         aria-hidden
-        className="absolute inset-[12%] rounded-full blur-2xl"
+        className="absolute inset-[12%] rounded-full"
         style={{
           background: 'radial-gradient(circle, color-mix(in srgb, var(--accent-a) 22%, transparent), transparent 70%)',
         }}
@@ -240,7 +242,7 @@ export function GarminHeroVisual() {
           transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
         >
           <Device>
-            <Screen page={page} load playing={!reduced} loop start={6} />
+            <Screen page={page} load playing={visible && !reduced} loop start={6} />
           </Device>
         </motion.div>
       </Depth>

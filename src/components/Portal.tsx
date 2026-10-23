@@ -5,6 +5,7 @@ import {
   useMotionValue,
   useReducedMotion,
   useSpring,
+  useInView,
   useTransform,
 } from 'motion/react'
 import {
@@ -27,9 +28,21 @@ const colorVars = (c: PortalColors) => ({ '--p1': c[0], '--p2': c[1], '--p3': c[
 
 const PASS_MS = 420 // how long passing through takes before the popout opens
 
-// A screen recording plays as a silent loop in place of a screenshot
+// A screen recording plays as a silent loop in place of a screenshot, only while on screen
 const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src)
-const videoProps = { autoPlay: true, muted: true, loop: true, playsInline: true }
+const videoProps = { muted: true, loop: true, playsInline: true }
+
+function usePlayInView() {
+  const ref = useRef<HTMLVideoElement>(null)
+  const inView = useInView(ref)
+  useEffect(() => {
+    const v = ref.current
+    if (!v) return
+    if (inView) v.play().catch(() => {})
+    else v.pause()
+  }, [inView])
+  return ref
+}
 
 /**
  * A clean white frame around a screenshot that behaves like a portal you get sucked
@@ -64,6 +77,7 @@ export function Portal({
   const [open, setOpen] = useState(false)
   const [passing, setPassing] = useState(false)
   const frameRef = useRef<HTMLDivElement>(null)
+  const videoRef = usePlayInView()
   // Where the card sits on screen; set while the screenshot is opened up
   const [from, setFrom] = useState<DOMRect | null>(null)
   const [expanded, setExpanded] = useState(false)
@@ -180,6 +194,7 @@ export function Portal({
         <div className={`relative aspect-video overflow-hidden rounded-[1.4rem] ${dark ? 'bg-[#080b10]' : 'bg-ink'}`}>
           {image && isVideo(image) ? (
             <motion.video
+              ref={videoRef}
               src={image}
               aria-label={`Vorschau: ${label}`}
               preload="metadata"
@@ -349,6 +364,7 @@ function Expanded({
   onClose: () => void
 }) {
   const reduced = useReducedMotion()
+  const videoRef = usePlayInView()
 
   // Mouse position on the whole screen, -1..1, smoothed: the card tilts and drifts with it
   const px = useMotionValue(0)
@@ -438,6 +454,7 @@ function Expanded({
             <div className={`relative aspect-video overflow-hidden rounded-[1.4rem] ${dark ? 'bg-[#080b10]' : 'bg-ink'}`}>
               {image && isVideo(image) ? (
                 <motion.video
+                  ref={videoRef}
                   src={image}
                   aria-label={label}
                   {...videoProps}

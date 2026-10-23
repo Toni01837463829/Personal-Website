@@ -101,7 +101,7 @@ export function SectionBreak({ to }: { to: ChapterId }) {
       <motion.div style={{ opacity, height, perspective: radius * 2.4 + 500 }} className="relative">
         {/* Soft accent glow the ring floats above */}
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 rounded-[50%] bg-(--accent-a) opacity-15 blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 rounded-[50%] bg-(--accent-a) opacity-15 [mask-image:radial-gradient(closest-side,#000,transparent)]"
           style={{ width: radius * 1.8, height: radius * 0.25, marginTop: radius * 0.06 }}
         />
         <motion.div

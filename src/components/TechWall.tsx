@@ -1,5 +1,5 @@
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
-import type { PointerEvent } from 'react'
+import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
+import { useRef, type PointerEvent } from 'react'
 import angular from '../assets/tech/angular.svg'
 import cplusplus from '../assets/tech/cplusplus.svg'
 import csharp from '../assets/tech/csharp.svg'
@@ -85,6 +85,8 @@ export function TechWall({ dark }: { dark?: boolean }) {
   const rotateX = useTransform(sy, (v) => (reduced ? 24 : 24 + v * -5))
   const rotateZ = useTransform(sx, (v) => (reduced ? -9 : -9 + v * 3))
   const rotateY = useTransform(sx, (v) => (reduced ? 0 : v * 6))
+  const ref = useRef<HTMLDivElement>(null)
+  const visible = useInView(ref)
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
@@ -94,6 +96,7 @@ export function TechWall({ dark }: { dark?: boolean }) {
 
   return (
     <div
+      ref={ref}
       className="relative h-full w-full overflow-hidden"
       style={{ perspective: 900 }}
       onPointerMove={onMove}
@@ -127,6 +130,8 @@ export function TechWall({ dark }: { dark?: boolean }) {
                     : {
                         animation: `tech-marquee ${row.seconds}s linear infinite`,
                         animationDirection: ri % 2 ? 'reverse' : 'normal',
+                        // Rests while off screen; left unset otherwise so hovering a row can pause it
+                        ...(!visible && { animationPlayState: 'paused' }),
                       }
                 }
               >

@@ -62,10 +62,10 @@ export function Cursor() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 z-[100]">
       <motion.div
-        className={`absolute top-0 left-0 flex items-center justify-center rounded-full border backdrop-blur-[3px] transition-[background-color,border-color,box-shadow] duration-300 ${
+        className={`absolute top-0 left-0 flex items-center justify-center rounded-full border transition-[background-color,border-color,box-shadow] duration-300 ${
           overLink
             ? 'border-[color-mix(in_srgb,var(--accent-a)_55%,transparent)] bg-white/70 shadow-[0_10px_30px_-10px_color-mix(in_srgb,var(--accent-a)_60%,transparent),inset_0_1px_0_rgba(255,255,255,.8)]'
-            : 'border-white/70 bg-white/25 shadow-[0_8px_24px_-10px_rgba(17,21,28,.35),inset_0_1px_0_rgba(255,255,255,.6)]'
+            : 'border-white/70 bg-white/35 shadow-[0_8px_24px_-10px_rgba(17,21,28,.35),inset_0_1px_0_rgba(255,255,255,.6)]'
         }`}
         style={{ x: bx, y: by, translateX: '-50%', translateY: '-50%' }}
         animate={{

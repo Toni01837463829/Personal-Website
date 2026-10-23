@@ -68,7 +68,7 @@ export function ActivityWall() {
   return (
     <div ref={wall} style={{ perspective: 1200 }} className="relative z-10 mx-auto w-full max-w-[min(30rem,calc((100svh-19rem)*0.8))]">
       {/* Accent light behind the tiles, glowing through their tinted glass */}
-      <div aria-hidden className="absolute inset-[12%] rounded-full bg-(--accent-a) opacity-30 blur-[90px]" />
+      <div aria-hidden className="absolute inset-[12%] rounded-full bg-(--accent-a) opacity-30 [mask-image:radial-gradient(closest-side,#000,transparent)]" />
       <h4 className="relative mb-5 flex items-center gap-2.5 text-lg font-semibold tracking-tight">
         <StravaLogo className="h-5 w-5 text-[#fc5200]" />
         {strava.heading}

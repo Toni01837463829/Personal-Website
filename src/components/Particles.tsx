@@ -58,13 +58,13 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
     const mouse = { x: -9999, y: -9999, dx: 0, dy: 0 }
 
     const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       w = window.innerWidth
       h = window.innerHeight
       canvas.width = w * dpr
       canvas.height = h * dpr
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      const count = Math.round(Math.min(1600, (w * h) / 850))
+      const count = Math.round(Math.min(900, (w * h) / 1500))
       particles = Array.from({ length: count }, () => {
         const size = Math.random() ** 3 // mostly tiny, a few bigger
         return {
@@ -153,9 +153,16 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
         const across = Math.min(1, Math.max(0, p.x / w + p.tint))
         const [r, g, b] = mix(mix(SLATE, INDIGO, across), RIPPLE, hit * 0.7)
         ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`
-        ctx.beginPath()
-        ctx.arc(p.x + p.ox + dx, p.y + p.oy + dy, p.r, 0, Math.PI * 2)
-        ctx.fill()
+        const cx = p.x + p.ox + dx
+        const cy = p.y + p.oy + dy
+        // Tiny dots look the same as squares and are much cheaper to draw
+        if (p.r < 1.2) {
+          ctx.fillRect(cx - p.r, cy - p.r, p.r * 2, p.r * 2)
+        } else {
+          ctx.beginPath()
+          ctx.arc(cx, cy, p.r, 0, Math.PI * 2)
+          ctx.fill()
+        }
       }
       // The movement has been used up; the next pointermove brings new
       mouse.dx = 0
@@ -205,14 +212,14 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
       <motion.div
         animate={{ backgroundColor: accent[1] }}
         transition={{ duration: 1.6, ease: 'easeInOut' }}
-        className="absolute -top-40 -left-40 h-[36rem] w-[36rem] rounded-full opacity-20 blur-3xl"
+        className="absolute -top-40 -left-40 h-[36rem] w-[36rem] rounded-full opacity-20 [mask-image:radial-gradient(closest-side,#000,transparent)]"
       />
       <motion.div
         animate={{ backgroundColor: accent[0] }}
         transition={{ duration: 1.6, ease: 'easeInOut' }}
-        className="absolute top-1/3 -right-48 h-[40rem] w-[40rem] rounded-full opacity-15 blur-3xl"
+        className="absolute top-1/3 -right-48 h-[40rem] w-[40rem] rounded-full opacity-15 [mask-image:radial-gradient(closest-side,#000,transparent)]"
       />
-      <div className="absolute -bottom-48 left-1/4 h-[34rem] w-[34rem] rounded-full bg-slate-300/40 blur-3xl" />
+      <div className="absolute -bottom-48 left-1/4 h-[34rem] w-[34rem] rounded-full bg-slate-300/40 [mask-image:radial-gradient(closest-side,#000,transparent)]" />
       <canvas ref={ref} className="absolute inset-0 h-full w-full" />
     </div>
   )

@@ -32,7 +32,7 @@ export function SimRacingShowcase() {
 
   return (
     <div ref={ref} className="relative mx-auto aspect-[100/96] w-full max-w-[38rem]">
-      <div aria-hidden className="absolute inset-[15%] rounded-full bg-(--accent-a) opacity-25 blur-[100px]" />
+      <div aria-hidden className="absolute inset-[15%] rounded-full bg-(--accent-a) opacity-25 [mask-image:radial-gradient(closest-side,#000,transparent)]" />
       {/* The ring the games travel on */}
       <div aria-hidden className="absolute inset-x-[4%] inset-y-[6%] rounded-[50%] border border-white/[0.06]" />
 

@@ -12,7 +12,7 @@ const site = projects.find((p) => p.hobby === 'feuerwehr' && p.visual === 'porta
 export function FeuerwehrShowcase() {
   return (
     <div className="relative z-10 mx-auto w-full max-w-[34rem]">
-      <div aria-hidden className="absolute inset-[15%] rounded-full bg-(--accent-a) opacity-20 blur-[100px]" />
+      <div aria-hidden className="absolute inset-[15%] rounded-full bg-(--accent-a) opacity-20 [mask-image:radial-gradient(closest-side,#000,transparent)]" />
 
       <div className="relative flex justify-center gap-14">
         {feuerwehr.medals.map((m, i) => (
