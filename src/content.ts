@@ -5,20 +5,31 @@ import stravaData from './data/strava.json'
 
 export const person = {
   name: 'Toni',
-  /** Under the name: the small muted words, then the big word in the coding colors */
-  tagline: { small: ['(Professional)', '(Vibe)'], word: 'Coder' },
   github: 'https://github.com/Toni01837463829',
 }
 
 export const about = {
-  text: [
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    'Ut enim ad minim veniam, quis nostrud **exercitation ullamco.**',
-  ],
+  /**
+   * The timeline, oldest first. from/to are the first and last month ('YYYY-MM'); without
+   * `to` it is still going on. kind picks the icon and color.
+   */
   path: [
-    { place: 'HTL Krems', detail: 'Ausbildung', years: '' },
-    { place: 'FH Oberösterreich', detail: 'AI Solutions', years: '' },
-  ],
+    { place: 'HTL Krems', detail: 'Ausbildung', from: '2019-09', to: '2024-06', kind: 'school' },
+    { place: 'WEB', detail: 'Ferialjob', from: '2024-07', to: '2024-08', kind: 'job' },
+    { place: 'Bundesheer', detail: 'Grundwehrdienst', from: '2024-09', to: '2025-02', kind: 'military' },
+    { place: 'Leyrer + Graf', detail: 'IT-Support', from: '2025-03', to: '2025-09', kind: 'job' },
+    { place: 'FH Oberösterreich', detail: 'AI Solutions, 1. Jahr', from: '2025-10', to: '2026-06', kind: 'study' },
+    { place: 'Fab4minds', detail: 'Praktikum', from: '2026-07', to: '2026-09', kind: 'job' },
+    { place: 'FH Oberösterreich', detail: 'AI Solutions, 2. Jahr', from: '2026-10', kind: 'study' },
+  ] as PathStep[],
+}
+
+export type PathStep = {
+  place: string
+  detail: string
+  from: string
+  to?: string
+  kind: 'school' | 'job' | 'military' | 'study'
 }
 
 export type HobbyId = 'triathlon' | 'simracing' | 'coding' | 'feuerwehr'
@@ -78,7 +89,7 @@ export const projects: {
   {
     title: 'Sim-Racing Dashboards',
     hobby: 'simracing',
-    text: 'Eigene Dashboards für den Simulator: Drehzahl, Gang, Rundenzeiten und Delta **auf einen Blick.**',
+    text: 'Eigene Dashboards für den Simulator: **Telemetrie**, Rundenzeiten, Abstände, Stint-Rechner, …',
     tags: ['Telemetrie', 'Live-Daten'],
     visual: 'portal',
     image: 'projects/simracing-dashboard.mp4',
@@ -86,9 +97,9 @@ export const projects: {
     colors: ['#22c55e', '#22d3ee', '#a855f7'],
   },
   {
-    title: 'Garmin Edge 1030 Datenseiten',
+    title: 'Garmin Radcomputer-Datenseiten',
     hobby: 'triathlon',
-    text: 'Eigene Datenseiten für den Radcomputer, genau auf das Training abgestimmt.',
+    text: 'Eigene Datenseiten für den Radcomputer, abgestimmt auf Training und Rennen.',
     tags: ['Garmin Connect IQ', 'Training'],
     visual: 'garmin',
   },
@@ -99,7 +110,7 @@ export const projects: {
 export const garminPages: { name: string; text: string; video: string; crop: { x: number; y: number } }[] = [
   {
     name: 'Fahrt',
-    text: 'Zeit, Distanz, **Höhenprofil** und die Zonen der ganzen Fahrt auf einer Seite.',
+    text: 'Zeit, Distanz, **Höhenprofil**, Zonen, … auf einer Seite.',
     video: 'projects/garmin-1.mp4',
     crop: { x: 94, y: 112 },
   },

@@ -83,7 +83,21 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
       })
     }
 
+    // While a solid section ([data-opaque]) fills the whole screen the field is hidden
+    // behind it, so it pauses and leaves the frame to the scrolling
+    let covered = false
+    const checkCovered = () => {
+      covered = [...document.querySelectorAll('[data-opaque]')].some((el) => {
+        const r = el.getBoundingClientRect()
+        return r.top <= 0 && r.bottom >= window.innerHeight
+      })
+    }
+
     const draw = (now: number) => {
+      if (covered && !reduced) {
+        frame = requestAnimationFrame(draw)
+        return
+      }
       ctx.clearRect(0, 0, w, h)
       waves = waves.filter((wv) => now - wv.start < WAVE_LIFE)
       const stirring = Math.abs(mouse.dx) + Math.abs(mouse.dy) > 0.05
@@ -166,17 +180,21 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
     }
 
     resize()
+    checkCovered()
     frame = requestAnimationFrame(draw)
     const onResize = () => {
       resize()
+      checkCovered()
       if (reduced) draw(performance.now())
     }
     window.addEventListener('resize', onResize)
+    window.addEventListener('scroll', checkCovered, { passive: true })
     window.addEventListener('pointerdown', onClick)
     window.addEventListener('pointermove', onMove)
     return () => {
       cancelAnimationFrame(frame)
       window.removeEventListener('resize', onResize)
+      window.removeEventListener('scroll', checkCovered)
       window.removeEventListener('pointerdown', onClick)
       window.removeEventListener('pointermove', onMove)
     }

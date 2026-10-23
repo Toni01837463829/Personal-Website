@@ -78,7 +78,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
               ))}
             </div>
           </Depth>
-          {project.link ? (
+          {project.link && (
             <a
               href={project.link}
               target="_blank"
@@ -87,8 +87,6 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
             >
               Projekt ansehen <span aria-hidden>→</span>
             </a>
-          ) : (
-            <p className="mt-10 text-sm text-mist">Link folgt</p>
           )}
         </Reveal>
       </div>

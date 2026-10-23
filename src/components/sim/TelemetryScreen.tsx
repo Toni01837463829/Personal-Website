@@ -1,4 +1,4 @@
-import { useAnimationFrame, useReducedMotion } from 'motion/react'
+import { useAnimationFrame, useInView, useReducedMotion } from 'motion/react'
 import { useId, useRef } from 'react'
 import { best, bestSectors, cornerReport, current, currentSectors, delta, fmtLap, idealLap, LAP_M, N, sectors, track, type Lap } from '../../sim/lap'
 import { Panel } from './Screen'
@@ -93,10 +93,12 @@ export function TelemetryScreen() {
   const dot = useRef<SVGCircleElement>(null)
   const readouts = useRef<(HTMLSpanElement | null)[]>([])
   const distRef = useRef<HTMLSpanElement>(null)
+  const root = useRef<HTMLDivElement>(null)
+  const visible = useInView(root)
 
   // A cursor replays the lap at 4× speed: slow through corners, fast down the straights
   useAnimationFrame((t) => {
-    if (!cursor.current) return
+    if (!visible || !cursor.current) return
     const i = reduced ? Math.round(N * 0.36) : indexAt(((t / 1000) * 4) % current.lapTime)
     cursor.current.style.transform = `translateX(${x(i)}px)`
     const [mx, my] = mapPoint(i)
@@ -113,7 +115,7 @@ export function TelemetryScreen() {
 
 
   return (
-    <div className="flex h-full w-full flex-col gap-3 p-4 text-[12px]" style={{ background: ui.bg, color: ui.text }}>
+    <div ref={root} className="flex h-full w-full flex-col gap-3 p-4 text-[12px]" style={{ background: ui.bg, color: ui.text }}>
       {/* Header */}
       <div className="flex items-center gap-5">
         <div>

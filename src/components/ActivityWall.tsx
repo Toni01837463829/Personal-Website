@@ -1,5 +1,5 @@
-import { motion, useReducedMotion, useTransform } from 'motion/react'
-import { useRef, useState, type PointerEvent } from 'react'
+import { motion, useInView, useReducedMotion, useTransform } from 'motion/react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { strava, stravaActivities, type Activity } from '../content'
 import { km, sportName } from '../format'
 import { ActivityCard } from './ActivityCard'
@@ -10,10 +10,20 @@ import { usePointer } from './Mouse'
 // How far each tile floats in front of the wall, so the grid shows some depth when it tilts
 const depths = [30, 10, 45, 15, 55, 20, 40, 5, 25, 50, 12, 35, 22, 60, 8, 42, 18, 52, 28, 14]
 
+const TEASE_UP_MS = 1100
+const TEASE_REST_MS = 900
+
+const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
+// Steps through the tiles in jumps, so the teaser hops around the wall but still visits every tile
+const teaseStep = [7, 5, 3, 1].find((s) => gcd(s, stravaActivities.length) === 1)!
+const teaseOrder = (turn: number) => (turn * teaseStep) % stravaActivities.length
+
 /**
  * Wall of glass tiles, one per Strava activity, that tilts toward the mouse. Hovering a
  * tile lifts it off the wall with a light that follows the cursor, and a card with its
  * route and numbers pops out beside the wall. Tiles open the activity on Strava.
+ * Until the visitor hovers one, the tiles take turns lifting by themselves, so the wall
+ * reads as something to play with.
  */
 export function ActivityWall() {
   const { x, y } = usePointer()
@@ -24,6 +34,27 @@ export function ActivityWall() {
   const wall = useRef<HTMLDivElement>(null)
   const [shown, setShown] = useState<Activity | null>(null)
   const [cardY, setCardY] = useState(0)
+  // Until the first hover, tiles take turns lifting by themselves, hinting that they react
+  const [touched, setTouched] = useState(false)
+  const [teaser, setTeaser] = useState<number | null>(null)
+  const visible = useInView(wall, { amount: 0.6 })
+  const teasing = visible && !touched && !reduced
+
+  useEffect(() => {
+    if (!teasing) return
+    let turn = 0
+    let timer = 0
+    const lift = () => {
+      setTeaser(teaseOrder(turn++))
+      timer = window.setTimeout(rest, TEASE_UP_MS)
+    }
+    const rest = () => {
+      setTeaser(null)
+      timer = window.setTimeout(lift, TEASE_REST_MS)
+    }
+    timer = window.setTimeout(lift, TEASE_REST_MS)
+    return () => window.clearTimeout(timer)
+  }, [teasing])
 
   // The card follows the hovered tile up and down a little, from the wall's middle
   const show = (activity: Activity, tile: HTMLElement) => {
@@ -31,11 +62,12 @@ export function ActivityWall() {
     const t = tile.getBoundingClientRect()
     setCardY((t.top + t.height / 2 - (w.top + w.height / 2)) * 0.4)
     setShown(activity)
+    setTouched(true)
   }
 
   return (
     <div ref={wall} style={{ perspective: 1200 }} className="relative z-10 mx-auto w-full max-w-[min(30rem,calc((100svh-19rem)*0.8))]">
-      {/* Accent light behind the glass, so the blur has something to catch */}
+      {/* Accent light behind the tiles, glowing through their tinted glass */}
       <div aria-hidden className="absolute inset-[12%] rounded-full bg-(--accent-a) opacity-30 blur-[90px]" />
       <h4 className="relative mb-5 flex items-center gap-2.5 text-lg font-semibold tracking-tight">
         <StravaLogo className="h-5 w-5 text-[#fc5200]" />
@@ -56,7 +88,12 @@ export function ActivityWall() {
             transition={{ duration: 0.8, delay: i * 0.03, ease: [0.22, 1, 0.36, 1] }}
             style={{ transformStyle: 'preserve-3d' }}
           >
-            <ActivityTile activity={a} depth={depths[i % depths.length]} active={shown?.id === a.id} onShow={(tile) => show(a, tile)} />
+            <ActivityTile
+              activity={a}
+              depth={depths[i % depths.length]}
+              active={shown ? shown.id === a.id : teasing && teaser === i}
+              onShow={(tile) => show(a, tile)}
+            />
           </motion.div>
         ))}
       </motion.div>
@@ -100,7 +137,7 @@ function ActivityTile({
       onFocus={(e) => onShow(e.currentTarget)}
       data-active={active || undefined}
       aria-label={`${sportName[activity.sport]}: ${activity.name}, ${km(activity.distance)} km, auf Strava ansehen`}
-      className="group relative block aspect-square w-full overflow-hidden rounded-xl border border-white/10 bg-[#0c1016]/85 shadow-[inset_0_1px_0_rgba(255,255,255,.12),0_24px_40px_-20px_rgba(0,0,0,.8)] backdrop-blur-xl transition-colors duration-300 outline-none data-active:border-(--accent-a)/60"
+      className="group relative block aspect-square w-full overflow-hidden rounded-xl border border-white/10 bg-[#0c1016]/85 shadow-[inset_0_1px_0_rgba(255,255,255,.12),0_24px_40px_-20px_rgba(0,0,0,.8)] transition-colors duration-300 outline-none data-active:border-(--accent-a)/60"
     >
       <div className="absolute inset-0 bg-linear-to-br from-(--accent-a)/10 via-transparent to-transparent" />
       <div
