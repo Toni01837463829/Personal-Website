@@ -192,21 +192,27 @@ function ScrollHint() {
     >
       Scrollen, um meine Projekte zu sehen
       <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/10 transition-colors group-hover:bg-(--accent-a) group-hover:text-white">
-        <motion.svg
-          width="14"
-          height="14"
-          viewBox="0 0 14 14"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
+        {/* The bobbing goes on an HTML wrapper: that can run on the compositor, an svg is
+            moved from script every frame, even while the screen is out of view */}
+        <motion.span
+          className="flex"
           animate={reduced ? undefined : { y: [-3, 3, -3] }}
           transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <path d="M7 1.5v10M2.5 7.5 7 12l4.5-4.5" />
-        </motion.svg>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M7 1.5v10M2.5 7.5 7 12l4.5-4.5" />
+          </svg>
+        </motion.span>
       </span>
     </a>
   )

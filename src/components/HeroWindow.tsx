@@ -1,5 +1,5 @@
-import { AnimatePresence, motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
-import { useEffect, useState, type PointerEvent } from 'react'
+import { AnimatePresence, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { hobbies, person, projects } from '../content'
 import { Portal } from './Portal'
 import { HobbyIcon } from './Icons'
@@ -56,10 +56,13 @@ const ease = [0.22, 1, 0.36, 1] as const
 export function HeroWindow() {
   const reduced = useReducedMotion()
   const [index, setIndex] = useState(0)
-  // Hold the current slide while the mouse is on the window or a screenshot is opened up
+  // Hold the current slide while the mouse is on the window or a screenshot is opened up,
+  // and while the window is scrolled out of view, so no slides are swapped in for nobody
+  const ref = useRef<HTMLDivElement>(null)
+  const visible = useInView(ref)
   const [hovered, setHovered] = useState(false)
   const [popout, setPopout] = useState(false)
-  const paused = hovered || popout
+  const paused = hovered || popout || !visible
 
   useEffect(() => {
     if (paused) return
@@ -77,7 +80,6 @@ export function HeroWindow() {
   const gy = useMotionValue(0)
   const rotateY = useSpring(useTransform(mx, (v) => (reduced ? 0 : v * 5)), { stiffness: 120, damping: 20 })
   const rotateX = useSpring(useTransform(my, (v) => (reduced ? 0 : v * -4)), { stiffness: 120, damping: 20 })
-  const glare = useMotionTemplate`radial-gradient(420px circle at ${gx}px ${gy}px, rgb(255 255 255 / 0.32), transparent 60%)`
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
@@ -89,6 +91,7 @@ export function HeroWindow() {
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, scale: 0.4, y: 160, filter: 'blur(12px)' }}
       // A filter left on here would stop the glass from blurring what is behind the pane
       animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
@@ -96,10 +99,11 @@ export function HeroWindow() {
       style={{ transformOrigin: '50% 100%' }}
       className="relative w-full"
     >
-      {/* Light behind the glass in the colors of the slide */}
+      {/* Light behind the glass in the colors of the slide, softened by a mask rather than a
+          blur, which would have to be redrawn whenever the window moves with the mouse */}
       <motion.div
         aria-hidden
-        className="absolute inset-[6%] rounded-full opacity-25 blur-3xl"
+        className="absolute -inset-[12%] rounded-full opacity-25 [mask-image:radial-gradient(closest-side,#000_35%,transparent)]"
         animate={{ background: `linear-gradient(135deg, ${a}, ${b})` }}
         transition={{ duration: 1 }}
       />
@@ -117,10 +121,11 @@ export function HeroWindow() {
         className="group relative rounded-[1.75rem] bg-linear-to-br from-white via-white/50 to-white/25 p-px shadow-[0_40px_80px_-40px_rgba(17,21,28,.4)]"
       >
         <div className="relative overflow-hidden rounded-[calc(1.75rem-1px)] bg-white/45 shadow-[inset_0_1px_0_rgba(255,255,255,.8)] backdrop-blur-xl backdrop-saturate-150">
+          {/* The glare is drawn once and slides along with the mouse */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-            style={{ background: glare }}
+            className="pointer-events-none absolute -top-[420px] -left-[420px] z-10 size-[840px] opacity-0 transition-opacity duration-500 will-change-transform group-hover:opacity-100"
+            style={{ x: gx, y: gy, background: 'radial-gradient(closest-side, rgb(255 255 255 / 0.32), transparent 60%)' }}
           />
 
           {/* Tabs in a glass pill, with the address underneath */}
@@ -174,9 +179,9 @@ export function HeroWindow() {
               <motion.div
                 key={index}
                 className="[grid-area:1/1] px-10 pt-4 pb-10"
-                initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.6, delay: 0.2, ease } }}
-                exit={{ opacity: 0, y: -12, filter: 'blur(6px)', transition: { duration: 0.25, ease } }}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.2, ease } }}
+                exit={{ opacity: 0, y: -12, transition: { duration: 0.25, ease } }}
               >
                 <p className="flex items-center gap-2 text-xs font-medium tracking-[0.2em] text-mist uppercase">
                   <span className="h-1.5 w-1.5 rounded-full" style={{ background: `linear-gradient(135deg, ${a}, ${b})` }} />

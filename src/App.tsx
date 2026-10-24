@@ -1,4 +1,5 @@
 import { motion, useScroll, useSpring } from 'motion/react'
+import { memo } from 'react'
 import { chapters, useActiveChapter } from './chapters'
 import { Cursor } from './components/Cursor'
 import { PointerProvider } from './components/Mouse'
@@ -25,21 +26,29 @@ export default function App() {
           style={{ scaleX: progress }}
           animate={{ backgroundImage: `linear-gradient(90deg, ${a}, ${b})` }}
           transition={{ duration: 0.8 }}
-          className="fixed inset-x-0 top-0 z-50 h-1 origin-left"
+          className="fixed inset-x-0 top-0 z-50 h-1 origin-left will-change-transform"
         />
         <Nav />
         <SectionNav active={active} />
-        <main>
-          <Hero />
-          <SectionBreak to="ueber-mich" />
-          <About />
-          <SectionBreak to="hobbys" />
-          <Hobbies />
-          <SectionBreak to="projekte" />
-          <Projects />
-        </main>
+        <Sections />
         <Cursor />
       </div>
     </PointerProvider>
   )
 }
+
+// The sections don't depend on which one is in view, so scrolling into the next one
+// doesn't re-render the whole page
+const Sections = memo(function Sections() {
+  return (
+    <main>
+      <Hero />
+      <SectionBreak to="ueber-mich" />
+      <About />
+      <SectionBreak to="hobbys" />
+      <Hobbies />
+      <SectionBreak to="projekte" />
+      <Projects />
+    </main>
+  )
+})

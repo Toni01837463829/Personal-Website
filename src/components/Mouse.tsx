@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
 import {
   motion,
   useMotionValue,
@@ -28,7 +28,9 @@ export function PointerProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('pointermove', onMove)
   }, [rawX, rawY])
 
-  return <PointerContext.Provider value={{ x, y }}>{children}</PointerContext.Provider>
+  // The same object every render, so the page re-rendering doesn't re-render every user
+  const pointer = useMemo(() => ({ x, y }), [x, y])
+  return <PointerContext.Provider value={pointer}>{children}</PointerContext.Provider>
 }
 
 export function usePointer() {
@@ -39,7 +41,8 @@ export function usePointer() {
 
 /**
  * Moves its children with the mouse. Higher depth = closer to the viewer = moves more.
- * Negative depth sits behind the page and moves the other way.
+ * Negative depth sits behind the page and moves the other way. It sits on a layer of its
+ * own, so following the mouse only moves that layer instead of repainting what's in it.
  */
 export function Depth({
   depth,
@@ -56,7 +59,7 @@ export function Depth({
   const tx = useTransform(x, (v) => v * k)
   const ty = useTransform(y, (v) => v * k)
   return (
-    <motion.div className={className} style={{ x: tx, y: ty }}>
+    <motion.div className={`will-change-transform ${className ?? ''}`} style={{ x: tx, y: ty }}>
       {children}
     </motion.div>
   )

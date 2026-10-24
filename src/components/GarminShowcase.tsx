@@ -129,7 +129,6 @@ export function GarminShowcase() {
                 z: front ? 0 : -160,
                 scale: front ? 1 : 0.86,
                 opacity: front ? 1 : 0.75,
-                filter: front ? 'brightness(1) blur(0px)' : 'brightness(.97) blur(0.5px)',
               }}
               whileHover={front || reduced ? undefined : { opacity: 1, z: -110 }}
               transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 110, damping: 20 }}
@@ -169,7 +168,7 @@ export function GarminShowcase() {
             {i === active && !reduced && (
               <motion.span
                 aria-hidden
-                className="absolute inset-x-3 bottom-0.5 h-0.5 origin-left rounded-full bg-ink/60"
+                className="absolute inset-x-3 bottom-0.5 h-0.5 origin-left rounded-full bg-ink/60 will-change-transform"
                 style={{ scaleX: progress }}
               />
             )}
@@ -181,9 +180,9 @@ export function GarminShowcase() {
           <motion.p
             key={active}
             className="[grid-area:1/1]"
-            initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -6, filter: 'blur(4px)' }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.4 }}
           >
             <Rich text={garminPages[active].text} />
@@ -247,8 +246,9 @@ export function GarminHeroVisual() {
         </motion.div>
       </Depth>
 
+      {/* The notes float on the frosted window already, so they skip a blur of their own */}
       <Depth depth={2.2} className="absolute top-[14%] left-0">
-        <div className="glass flex items-center gap-2 rounded-full bg-white/70! px-3.5 py-2 text-xs font-medium text-ink">
+        <div className="glass-flat flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium text-ink">
           <span className="relative flex h-2 w-2">
             {!reduced && <span className="absolute inset-0 animate-ping rounded-full bg-[#e5484d] opacity-70" />}
             <span className="relative h-2 w-2 rounded-full bg-[#e5484d]" />
@@ -258,14 +258,14 @@ export function GarminHeroVisual() {
       </Depth>
 
       <Depth depth={1.6} className="absolute top-[40%] right-0 w-[34%]">
-        <div className="glass rounded-2xl bg-white/75! p-3.5">
+        <div className="glass-flat rounded-2xl p-3.5">
           <p className="text-[10px] tracking-widest text-mist uppercase">Carb Fuel</p>
           <p className="mt-1 text-sm font-medium">Glykogen live</p>
           <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-sand">
             <motion.span
-              className="block h-full rounded-full bg-[#2fae4e]"
-              initial={{ width: '92%' }}
-              animate={reduced ? undefined : { width: ['92%', '74%', '92%'] }}
+              className="block h-full origin-left rounded-full bg-[#2fae4e]"
+              initial={{ scaleX: 0.92 }}
+              animate={reduced ? undefined : { scaleX: [0.92, 0.74, 0.92] }}
               transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
             />
           </div>
@@ -273,7 +273,7 @@ export function GarminHeroVisual() {
       </Depth>
 
       <Depth depth={2.8} className="absolute bottom-[4%] left-[2%]">
-        <div className="glass flex items-center gap-3 rounded-2xl bg-white/75! px-3.5 py-2.5">
+        <div className="glass-flat flex items-center gap-3 rounded-2xl px-3.5 py-2.5">
           <div className="flex items-end gap-0.5">
             {[5, 9, 7, 12, 10, 14].map((h, i) => (
               <motion.span

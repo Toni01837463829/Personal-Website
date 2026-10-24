@@ -91,7 +91,7 @@ function ProjectRow({ project, index }: { project: Project; index: number }) {
         </Reveal>
       </div>
 
-      <motion.div style={{ y }} className={flipped ? 'md:order-1' : ''}>
+      <motion.div style={{ y }} className={`will-change-transform ${flipped ? 'md:order-1' : ''}`}>
         <Reveal delay={0.15}>
           <ProjectVisual project={project} />
         </Reveal>

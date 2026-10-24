@@ -38,7 +38,7 @@ export function Hero() {
     <section ref={ref} id="top" className="relative min-h-[100svh] overflow-hidden">
       <motion.div
         style={{ scale }}
-        className="mx-auto grid min-h-[100svh] max-w-6xl items-center gap-16 px-6 pt-32 pb-24 md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20 lg:pt-24"
+        className="mx-auto grid min-h-[100svh] max-w-6xl items-center gap-16 px-6 pt-32 pb-24 will-change-transform md:px-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20 lg:pt-24"
       >
         {/* Left: name */}
         <FadeOnLeave>

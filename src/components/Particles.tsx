@@ -13,6 +13,10 @@ type Particle = {
   phase: number
   ox: number // offset from being stirred by the mouse, eases back to 0
   oy: number
+  // Where and how strongly it is drawn this frame
+  cx: number
+  cy: number
+  alpha: number
 }
 
 type Wave = { x: number; y: number; start: number }
@@ -31,7 +35,26 @@ const STIR_RADIUS = 150 // px around the mouse that gets stirred
 const STIR_STRENGTH = 0.05 // share of the mouse's movement passed on to nearby dots
 const STIR_MAX = 18 // px, how far a dot can be pushed away from its path
 
+// Speeds above are per frame at 60 fps; other frame rates move the dots just as fast
+const FRAME_MS = 1000 / 60
+// Left alone the dots drift a fraction of a pixel per frame, which looks the same at 30 fps
+// for half the work; while the mouse stirs them or a ripple passes, at up to 60 fps
+const CALM_MS = 32
+const LIVELY_MS = 15
+
+// Colors come from a small palette, in steps across the field and steps toward the ripple
+// color, so a frame sets each color once instead of building one for every dot
+const ACROSS = 24
+const HIT = 8
+
 const mix = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(v + (b[i] - v) * t))
+
+const palette = Array.from({ length: ACROSS * HIT }, (_, k) => {
+  const across = Math.floor(k / HIT) / (ACROSS - 1)
+  const hit = (k % HIT) / (HIT - 1)
+  const [r, g, b] = mix(mix(SLATE, INDIGO, across), RIPPLE, hit * 0.7)
+  return `rgb(${r},${g},${b})`
+})
 
 /**
  * A dense field of small, crisp, slowly drifting dots that fade in and out, behind the
@@ -54,8 +77,12 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
     let w = 0
     let h = 0
     let frame = 0
-    // Mouse position and how far it moved since the last frame
+    let last = 0 // when the field was last drawn
+    let settling = false // stirred dots are still easing back onto their paths
+    // Mouse position and how far it moved since the last drawn frame
     const mouse = { x: -9999, y: -9999, dx: 0, dy: 0 }
+    // The dots of the frame being drawn, grouped by palette color
+    const buckets: Particle[][] = palette.map(() => [])
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
@@ -79,13 +106,17 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
           phase: Math.random() * Math.PI * 2,
           ox: 0,
           oy: 0,
+          cx: 0,
+          cy: 0,
+          alpha: 0,
         }
       })
     }
 
-    // While a solid section ([data-opaque]) fills the whole screen the field is hidden
-    // behind it, so it pauses and leaves the frame to the scrolling
+    // While a solid section or an opened-up screenshot ([data-opaque]) fills the whole
+    // screen the field is hidden behind it, so it pauses and leaves the frame to the rest
     let covered = false
+    let checked = 0
     const checkCovered = () => {
       covered = [...document.querySelectorAll('[data-opaque]')].some((el) => {
         const r = el.getBoundingClientRect()
@@ -93,19 +124,23 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
       })
     }
 
-    const draw = (now: number) => {
-      if (covered && !reduced) {
-        frame = requestAnimationFrame(draw)
-        return
-      }
+    // Moves the dots on by `step` frames and draws them
+    const render = (now: number, step: number) => {
       ctx.clearRect(0, 0, w, h)
       waves = waves.filter((wv) => now - wv.start < WAVE_LIFE)
+      // How far each ripple has traveled and how strong it still is
+      const ripples = waves.map((wv) => {
+        const age = now - wv.start
+        return { x: wv.x, y: wv.y, reach: age * WAVE_SPEED, fade: (1 - age / WAVE_LIFE) ** 1.5 }
+      })
       const stirring = Math.abs(mouse.dx) + Math.abs(mouse.dy) > 0.05
+      const ease = 0.96 ** step
+      settling = false
 
       for (const p of particles) {
         if (!reduced) {
-          p.x += p.vx
-          p.y += p.vy
+          p.x += p.vx * step
+          p.y += p.vy * step
           if (p.x < -5) p.x = w + 5
           if (p.x > w + 5) p.x = -5
           if (p.y < -5) p.y = h + 5
@@ -123,8 +158,9 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
               p.oy = Math.max(-STIR_MAX, Math.min(STIR_MAX, p.oy + mouse.dy * k))
             }
           }
-          p.ox *= 0.96
-          p.oy *= 0.96
+          p.ox *= ease
+          p.oy *= ease
+          if (Math.abs(p.ox) + Math.abs(p.oy) > 0.3) settling = true
         }
 
         // Ripple: inside the moving band the dot swings out and back (one sine period),
@@ -132,14 +168,13 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
         let dx = 0
         let dy = 0
         let hit = 0
-        for (const wv of waves) {
-          const age = now - wv.start
+        for (const wv of ripples) {
           const ex = p.x - wv.x
           const ey = p.y - wv.y
-          const d = Math.hypot(ex, ey) || 1
-          const band = (d - age * WAVE_SPEED) / WAVE_WIDTH
+          const d = Math.sqrt(ex * ex + ey * ey) || 1
+          const band = (d - wv.reach) / WAVE_WIDTH
           if (band < -2 || band > 2) continue
-          const env = Math.exp(-band * band * 2) * (1 - age / WAVE_LIFE) ** 1.5
+          const env = Math.exp(-band * band * 2) * wv.fade
           const swing = Math.sin(band * Math.PI) * env * WAVE_PUSH
           dx += (ex / d) * swing
           dy += (ey / d) * swing
@@ -147,28 +182,56 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
         }
 
         const breathe = reduced ? 0.8 : 0.5 + 0.5 * Math.sin(now * p.pulse + p.phase)
-        const alpha = Math.min(1, p.a * (0.1 + 0.9 * breathe) + hit * 0.3)
-        if (alpha < 0.02) continue
+        p.alpha = Math.min(1, p.a * (0.1 + 0.9 * breathe) + hit * 0.3)
+        if (p.alpha < 0.02) continue
 
+        p.cx = p.x + p.ox + dx
+        p.cy = p.y + p.oy + dy
         const across = Math.min(1, Math.max(0, p.x / w + p.tint))
-        const [r, g, b] = mix(mix(SLATE, INDIGO, across), RIPPLE, hit * 0.7)
-        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`
-        const cx = p.x + p.ox + dx
-        const cy = p.y + p.oy + dy
-        // Tiny dots look the same as squares and are much cheaper to draw
-        if (p.r < 1.2) {
-          ctx.fillRect(cx - p.r, cy - p.r, p.r * 2, p.r * 2)
-        } else {
-          ctx.beginPath()
-          ctx.arc(cx, cy, p.r, 0, Math.PI * 2)
-          ctx.fill()
-        }
+        buckets[Math.round(across * (ACROSS - 1)) * HIT + Math.round(hit * (HIT - 1))].push(p)
       }
+
+      for (let k = 0; k < buckets.length; k++) {
+        const bucket = buckets[k]
+        if (!bucket.length) continue
+        ctx.fillStyle = palette[k]
+        for (const p of bucket) {
+          ctx.globalAlpha = p.alpha
+          // Tiny dots look the same as squares and are much cheaper to draw
+          if (p.r < 1.2) {
+            ctx.fillRect(p.cx - p.r, p.cy - p.r, p.r * 2, p.r * 2)
+          } else {
+            ctx.beginPath()
+            ctx.arc(p.cx, p.cy, p.r, 0, Math.PI * 2)
+            ctx.fill()
+          }
+        }
+        bucket.length = 0
+      }
+      ctx.globalAlpha = 1
       // The movement has been used up; the next pointermove brings new
       mouse.dx = 0
       mouse.dy = 0
+    }
 
-      if (!reduced) frame = requestAnimationFrame(draw)
+    const tick = (now: number) => {
+      frame = requestAnimationFrame(tick)
+      // Scrolling is not the only way to get covered: a screenshot opens up without it
+      if (now - checked > 500) {
+        checked = now
+        checkCovered()
+      }
+      if (covered) {
+        mouse.dx = 0
+        mouse.dy = 0
+        return
+      }
+      const lively = waves.length > 0 || settling || mouse.dx !== 0 || mouse.dy !== 0
+      if (now - last < (lively ? LIVELY_MS : CALM_MS)) return
+      // After a long gap (covered, tab in the background) the dots don't jump ahead
+      const step = Math.min(now - last, 100) / FRAME_MS
+      last = now
+      render(now, step)
     }
 
     const onMove = (e: PointerEvent) => {
@@ -188,11 +251,12 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
 
     resize()
     checkCovered()
-    frame = requestAnimationFrame(draw)
+    if (reduced) render(performance.now(), 0)
+    else frame = requestAnimationFrame(tick)
     const onResize = () => {
       resize()
       checkCovered()
-      if (reduced) draw(performance.now())
+      if (reduced) render(performance.now(), 0)
     }
     window.addEventListener('resize', onResize)
     window.addEventListener('scroll', checkCovered, { passive: true })

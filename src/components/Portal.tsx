@@ -28,6 +28,12 @@ const colorVars = (c: PortalColors) => ({ '--p1': c[0], '--p2': c[1], '--p3': c[
 
 const PASS_MS = 420 // how long passing through takes before the popout opens
 
+// The tunnel light, on a layer twice the window's size: 35% of it is 70% of the window
+const lightTunnel =
+  'radial-gradient(ellipse 35% 35% at 50% 50%, transparent 40%, color-mix(in srgb, var(--p2) 10%, rgba(255,255,255,.25)) 75%, color-mix(in srgb, var(--p1) 12%, rgba(255,255,255,.6)) 100%)'
+const darkTunnel =
+  'radial-gradient(ellipse 35% 35% at 50% 50%, transparent 40%, color-mix(in srgb, var(--p2) 16%, transparent) 75%, color-mix(in srgb, var(--p1) 32%, transparent) 100%)'
+
 // A screen recording plays as a silent loop in place of a screenshot, only while on screen
 const isVideo = (src: string) => /\.(mp4|webm)$/i.test(src)
 const videoProps = { muted: true, loop: true, playsInline: true }
@@ -96,10 +102,9 @@ export function Portal({
   const ox = useTransform(sx, (v) => v * 100)
   const oy = useTransform(sy, (v) => v * 100)
   const origin = useMotionTemplate`${ox}% ${oy}%`
-  // Light closing in around the mouse: clear in the middle, tinted toward the edges
-  const lightTunnel = useMotionTemplate`radial-gradient(ellipse 70% 70% at ${ox}% ${oy}%, transparent 40%, color-mix(in srgb, var(--p2) 10%, rgba(255,255,255,.25)) 75%, color-mix(in srgb, var(--p1) 12%, rgba(255,255,255,.6)) 100%)`
-  const darkTunnel = useMotionTemplate`radial-gradient(ellipse 70% 70% at ${ox}% ${oy}%, transparent 40%, color-mix(in srgb, var(--p2) 16%, transparent) 75%, color-mix(in srgb, var(--p1) 32%, transparent) 100%)`
-  const tunnel = dark ? darkTunnel : lightTunnel
+  // The tunnel light is twice the window's size, centered on the mouse
+  const tunnelX = useTransform(sx, (v) => `${v * 50 - 50}%`)
+  const tunnelY = useTransform(sy, (v) => `${v * 50 - 50}%`)
 
   const onEnter = () => setOpen(true)
   const onMove = (e: PointerEvent<HTMLElement>) => {
@@ -236,11 +241,12 @@ export function Portal({
             </motion.div>
           )}
 
-          {/* Tinted light closing in around the mouse */}
+          {/* Tinted light closing in around the mouse: clear in the middle, tinted toward the
+              edges. Drawn once and slid along with the mouse rather than redrawn as it moves */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{ background: tunnel }}
+            className="pointer-events-none absolute top-0 left-0 h-[200%] w-[200%] will-change-transform"
+            style={{ x: tunnelX, y: tunnelY, background: dark ? darkTunnel : lightTunnel }}
             animate={{ opacity: open ? 1 : 0 }}
             transition={{ duration: 0.5 }}
           />
@@ -278,7 +284,7 @@ export function Portal({
 
           {(image || children) && (
             <motion.span
-              className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium whitespace-nowrap text-ink shadow-[0_20px_40px_-15px_rgba(17,21,28,.45)] backdrop-blur"
+              className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium whitespace-nowrap text-ink shadow-[0_20px_40px_-15px_rgba(17,21,28,.45)]"
               initial={false}
               animate={{ opacity: open && !passing ? 1 : 0, y: open && !passing ? 0 : 8 }}
               transition={{ type: 'spring', stiffness: 260, damping: 24, delay: open ? 0.1 : 0 }}
@@ -414,6 +420,8 @@ function Expanded({
       role="dialog"
       aria-modal="true"
       aria-label={label}
+      // Covers the screen, so the particle field behind the blur can rest (see Particles.tsx)
+      data-opaque
       style={{ ...colorVars(colors), ...(dark && ({ '--accent-a': colors[0], '--accent-b': colors[1] } as CSSProperties)) }}
     >
       <motion.div

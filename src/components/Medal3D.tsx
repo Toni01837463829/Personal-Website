@@ -4,7 +4,9 @@ import { useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 const SLOW = 40 // degrees per second when left alone
 const FAST = 220 // while hovered
 const THICKNESS = 7
-const EDGE_LAYERS = 16
+// Each layer is a masked 3D layer the browser draws every frame the badge turns; at 1px
+// apart the edge still looks solid, even close to edge-on
+const EDGE_LAYERS = 8
 
 /**
  * A badge photo turned into a coin you can spin: the photo on the front, the stamped
@@ -113,9 +115,10 @@ export function Medal3D({ src, alt, height, ratio }: { src: string; alt: string;
           <motion.div className="absolute inset-0 mix-blend-screen" style={{ ...outline, background: sheen }} />
         </div>
       </motion.div>
+      {/* On a layer of its own, so narrowing it every frame doesn't repaint and re-blur it */}
       <motion.div
         aria-hidden
-        className="absolute bottom-0 left-1/2 h-3 -translate-x-1/2 rounded-[50%] bg-black/60 blur-md"
+        className="absolute bottom-0 left-1/2 h-3 -translate-x-1/2 rounded-[50%] bg-black/60 blur-md will-change-transform"
         style={{ width: width * 0.9, scaleX: shadowScale }}
       />
     </div>

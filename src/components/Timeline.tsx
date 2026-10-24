@@ -209,7 +209,7 @@ export function Timeline({ steps }: { steps: PathStep[] }) {
           <motion.li
             aria-hidden
             style={{ x: tip }}
-            className="absolute top-1/2 left-0 z-20 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-(--accent-b) shadow-[0_0_0_4px_color-mix(in_srgb,var(--accent-b)_20%,transparent),0_0_24px_6px_color-mix(in_srgb,var(--accent-b)_45%,transparent)]"
+            className="absolute top-1/2 left-0 z-20 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-(--accent-b) shadow-[0_0_0_4px_color-mix(in_srgb,var(--accent-b)_20%,transparent),0_0_24px_6px_color-mix(in_srgb,var(--accent-b)_45%,transparent)] will-change-transform"
           />
         </motion.ol>
       </div>
@@ -291,7 +291,7 @@ function Station({
       {/* The stretch on the axis, with a hair of space to its neighbors */}
       <motion.span
         style={{ scaleX: fill }}
-        className={`absolute inset-x-[2px] top-1/2 h-1 origin-left -translate-y-1/2 rounded-full bg-(--k) transition-[height,box-shadow] duration-300 group-hover/st:h-1.5 group-hover/st:shadow-[0_0_14px_var(--k)] ${
+        className={`absolute inset-x-[2px] top-1/2 h-1 origin-left -translate-y-1/2 rounded-full bg-(--k) transition-[height,box-shadow] duration-300 will-change-transform group-hover/st:h-1.5 group-hover/st:shadow-[0_0_14px_var(--k)] ${
           open ? '[mask-image:linear-gradient(90deg,#000_55%,transparent)]' : ''
         }`}
       />
@@ -313,7 +313,7 @@ function Station({
 
       <motion.div
         style={{ opacity: cardOpacity, y: cardY }}
-        className={`pointer-events-auto absolute w-60 -translate-x-1/2 md:w-68 ${open ? 'left-[calc(var(--m)/2)]' : 'left-1/2'} ${
+        className={`pointer-events-auto absolute w-60 -translate-x-1/2 will-change-transform md:w-68 ${open ? 'left-[calc(var(--m)/2)]' : 'left-1/2'} ${
           above ? 'bottom-[calc(50%+3.25rem)]' : 'top-[calc(50%+3.25rem)]'
         }`}
       >

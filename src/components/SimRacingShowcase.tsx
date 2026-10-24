@@ -41,7 +41,7 @@ export function SimRacingShowcase() {
       ))}
 
       <div className="absolute top-1/2 left-1/2 z-10 w-[58%] -translate-x-1/2 -translate-y-1/2">
-        <Slides />
+        <Slides visible={visible} />
       </div>
     </div>
   )
@@ -93,19 +93,23 @@ function OrbitCover({
   )
 }
 
-/** The box in the middle: swipes through the slides on its own, the tabs above pick one. */
-function Slides() {
+/**
+ * The box in the middle: swipes through the slides on its own while on screen, the tabs
+ * above pick one.
+ */
+function Slides({ visible }: { visible: boolean }) {
   const [index, setIndex] = useState(0)
-  const [hold, setHold] = useState(false)
+  const [hovered, setHovered] = useState(false)
   const [opened, setOpened] = useState(false) // a slide is opened up in front of the page
   const [run, setRun] = useState(0) // restarts the timer bar when a tab is picked
   const slide = simracing.slides[index]
+  const hold = hovered || opened || !visible
 
   useEffect(() => {
-    if (hold || opened) return
+    if (hold) return
     const t = window.setTimeout(() => setIndex((i) => (i + 1) % simracing.slides.length), SLIDE_MS)
     return () => window.clearTimeout(t)
-  }, [index, hold, opened, run])
+  }, [index, hold, run])
 
   const pick = (i: number) => {
     setIndex(i)
@@ -113,7 +117,7 @@ function Slides() {
   }
 
   return (
-    <div onPointerEnter={() => setHold(true)} onPointerLeave={() => setHold(false)}>
+    <div onPointerEnter={() => setHovered(true)} onPointerLeave={() => setHovered(false)}>
       <div role="tablist" aria-label="Sim-Racing" className="mb-3 flex justify-center gap-1.5">
         {simracing.slides.map((s, i) => (
           <button
@@ -121,11 +125,11 @@ function Slides() {
             role="tab"
             aria-selected={i === index}
             onClick={() => pick(i)}
-            className={`relative overflow-hidden rounded-full border bg-[#0c1016]/80 px-3 py-1 text-[11px] font-medium whitespace-nowrap backdrop-blur transition-colors ${
+            className={`relative overflow-hidden rounded-full border bg-[#0c1016]/80 px-3 py-1 text-[11px] font-medium whitespace-nowrap transition-colors ${
               i === index ? 'border-(--accent-a)/50 text-ink' : 'border-white/10 text-mist hover:text-ink'
             }`}
           >
-            {i === index && !hold && !opened && (
+            {i === index && !hold && (
               <motion.span
                 key={`${index}-${run}`}
                 aria-hidden

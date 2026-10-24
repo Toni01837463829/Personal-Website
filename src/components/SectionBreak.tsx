@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react'
+import { motion, useInView, useReducedMotion, useScroll, useTransform, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { accentVars, chapter, chapters, type ChapterId } from '../chapters'
 import { usePointer } from './Mouse'
@@ -34,15 +34,17 @@ function layoutRing(label: string, vw: number) {
   return { fontSize, radius, glyphs }
 }
 
+type Ring = ReturnType<typeof layoutRing>
+
 /**
  * The band before each section: its name wrapped around a tilted 3D ring that spins as
  * you scroll past and swings toward the mouse. The near side is solid with a bit of depth,
  * the far side shows through, mirrored like glass, as hollow letters in the section accent.
+ * Every letter is a 3D layer of its own, so the ring only exists while the band is on or
+ * near the screen.
  */
 export function SectionBreak({ to }: { to: ChapterId }) {
   const ref = useRef<HTMLDivElement>(null)
-  const reduced = useReducedMotion()
-  const k = reduced ? 0 : 1
   const { label } = chapter(to)
   const index = String(chapters.findIndex((c) => c.id === to)).padStart(2, '0')
 
@@ -54,15 +56,42 @@ export function SectionBreak({ to }: { to: ChapterId }) {
     return () => window.removeEventListener('resize', update)
   }, [label])
 
-  const { x: px, y: py } = usePointer()
+  const near = useInView(ref, { margin: '50% 0px' })
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const rotateY = useTransform([scrollYProgress, px], ([p, m]: number[]) => (40 - p * 160 + m * 18) * k)
-  const rotateX = useTransform([scrollYProgress, py], ([p, m]: number[]) => (-8 + (p - 0.5) * 6 + m * 4) * k)
-  const opacity = useTransform(scrollYProgress, [0.05, 0.3, 0.7, 0.95], [0, 1, 1, 0])
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.8])
 
-  const { fontSize, radius, glyphs } = ring
-  const height = fontSize * 1.5 + radius * 0.4
+  return (
+    <div
+      ref={ref}
+      style={accentVars(to)}
+      aria-hidden
+      // Only narrow screens fade the edges: there the ring is wider than the band, on wider
+      // screens it fits and a mask would only cost a second pass over every letter
+      className="relative overflow-hidden py-10 select-none max-md:[mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] md:py-16"
+    >
+      <div style={{ height: ring.fontSize * 1.5 + ring.radius * 0.4 }} className="relative">
+        {near && <SpinningRing ring={ring} progress={scrollYProgress} />}
+      </div>
+
+      <div className="relative mt-6 flex items-center justify-center">
+        <span className="glass relative rounded-full px-4 py-1.5 text-xs font-medium tracking-[0.3em] uppercase">
+          <span className="text-accent tabular-nums">{index}</span>
+          <span className="mx-2 text-mist">/</span>
+          <span className="text-ink">{label}</span>
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/** The ring itself, turned by how far the band has scrolled through the screen and by the mouse. */
+function SpinningRing({ ring: { fontSize, radius, glyphs }, progress }: { ring: Ring; progress: MotionValue<number> }) {
+  const reduced = useReducedMotion()
+  const k = reduced ? 0 : 1
+  const { x: px, y: py } = usePointer()
+  const rotateY = useTransform([progress, px], ([p, m]: number[]) => (40 - p * 160 + m * 18) * k)
+  const rotateX = useTransform([progress, py], ([p, m]: number[]) => (-8 + (p - 0.5) * 6 + m * 4) * k)
+  const opacity = useTransform(progress, [0.05, 0.3, 0.7, 0.95], [0, 1, 1, 0])
+  const scale = useTransform(progress, [0, 0.5, 1], [0.8, 1, 0.8])
 
   const face = (g: Glyph, i: number, back: boolean) => (
     <span
@@ -92,39 +121,24 @@ export function SectionBreak({ to }: { to: ChapterId }) {
   )
 
   return (
-    <div
-      ref={ref}
-      style={accentVars(to)}
-      aria-hidden
-      className="relative overflow-hidden py-10 select-none [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)] md:py-16"
-    >
-      <motion.div style={{ opacity, height, perspective: radius * 2.4 + 500 }} className="relative">
-        {/* Soft accent glow the ring floats above */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 rounded-[50%] bg-(--accent-a) opacity-15 [mask-image:radial-gradient(closest-side,#000,transparent)]"
-          style={{ width: radius * 1.8, height: radius * 0.25, marginTop: radius * 0.06 }}
-        />
+    <motion.div style={{ opacity, perspective: radius * 2.4 + 500 }} className="absolute inset-0">
+      {/* Soft accent glow the ring floats above */}
+      <div
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 rounded-[50%] bg-(--accent-a) opacity-15 [mask-image:radial-gradient(closest-side,#000,transparent)]"
+        style={{ width: radius * 1.8, height: radius * 0.25, marginTop: radius * 0.06 }}
+      />
+      <motion.div
+        style={{ scale, transformStyle: 'preserve-3d' }}
+        className="absolute top-1/2 left-1/2 -rotate-3"
+      >
         <motion.div
-          style={{ scale, transformStyle: 'preserve-3d' }}
-          className="absolute top-1/2 left-1/2 -rotate-3"
+          style={{ rotateX, rotateY, transformStyle: 'preserve-3d', fontSize }}
+          className="relative leading-none font-bold tracking-[-0.03em]"
         >
-          <motion.div
-            style={{ rotateX, rotateY, transformStyle: 'preserve-3d', fontSize }}
-            className="relative leading-none font-bold tracking-[-0.03em]"
-          >
-            {glyphs.map((g, i) => face(g, i, true))}
-            {glyphs.map((g, i) => face(g, i, false))}
-          </motion.div>
+          {glyphs.map((g, i) => face(g, i, true))}
+          {glyphs.map((g, i) => face(g, i, false))}
         </motion.div>
       </motion.div>
-
-      <div className="relative mt-6 flex items-center justify-center">
-        <span className="glass relative rounded-full px-4 py-1.5 text-xs font-medium tracking-[0.3em] uppercase">
-          <span className="text-accent tabular-nums">{index}</span>
-          <span className="mx-2 text-mist">/</span>
-          <span className="text-ink">{label}</span>
-        </span>
-      </div>
-    </div>
+    </motion.div>
   )
 }
