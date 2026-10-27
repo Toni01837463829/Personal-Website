@@ -68,22 +68,24 @@ function Screen({
 }
 
 /**
- * A bike computer in the style of an Edge 1030: a white body with a dark bumper along the
- * bottom, almost all of its front black glass, the screen near the top and an empty glass
- * chin below it.
+ * A bike computer drawn after the Edge 1030 (without the brand name), in its proportions:
+ * a white body showing as a thin rim around a front of black glass with strongly rounded
+ * corners, the screen set in from the sides and top with a tall empty chin below it, a
+ * white lip under the glass and the darker underside with the buttons below that.
  */
 function Device({ children }: { children: ReactNode }) {
   return (
-    <div className="relative overflow-hidden rounded-[17%/10.5%] bg-linear-to-b from-white to-[#eef1f5] p-[3%] pb-[6.5%] shadow-[inset_0_2px_1px_rgba(255,255,255,.9),inset_0_-10px_14px_-10px_rgba(17,21,28,.25),0_40px_70px_-35px_rgba(17,21,28,.55)] ring-1 ring-stone/70">
-      {/* Rubber bumper along the bottom edge */}
-      <span aria-hidden className="absolute inset-x-0 bottom-0 h-[3.5%] bg-linear-to-b from-[#4a5059] to-[#262a31]" />
-      {/* Black glass front, with a faint reflection across it */}
-      <div className="relative rounded-[15%/9.5%] bg-[#0b0d11] px-[5.5%] pt-[8%] pb-[21%] shadow-[inset_0_0_0_1px_rgba(255,255,255,.06),inset_0_1px_0_rgba(255,255,255,.14)]">
-        {children}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(118deg,rgba(255,255,255,.13),rgba(255,255,255,.03)_32%,transparent_33%)]"
-        />
+    <div>
+      <div className="relative rounded-[22%/11.5%] bg-linear-to-b from-white via-[#f8f9fb] to-[#e6eaef] px-[1.2%] pt-[4.7%] pb-[6.6%] shadow-[inset_3px_0_4px_-2px_rgba(17,21,28,.12),inset_-3px_0_4px_-2px_rgba(17,21,28,.12),inset_0_2px_1px_#fff,inset_0_-4px_6px_-3px_rgba(17,21,28,.18),0_40px_70px_-35px_rgba(17,21,28,.55)] ring-1 ring-stone/60">
+        <div className="rounded-[21%/11.6%] bg-linear-to-b from-[#0f1114] to-[#08090b] px-[10%] pt-[20%] pb-[31%] shadow-[inset_0_0_0_1px_rgba(255,255,255,.06)]">
+          {/* The display's own thin dark border inside the glass */}
+          <div className="shadow-[0_0_0_1px_#22262c]">{children}</div>
+        </div>
+      </div>
+      {/* Underside, with the lap and start buttons */}
+      <div className="relative mx-auto -mt-[1%] aspect-[196/20] w-[77%] rounded-b-[45%_100%] bg-linear-to-b from-[#555b64] via-[#2a2e35] to-[#17191d] shadow-[0_6px_10px_-6px_rgba(17,21,28,.5)]">
+        <span aria-hidden className="absolute top-[15%] bottom-[30%] left-[8%] w-px bg-white/15" />
+        <span aria-hidden className="absolute top-[15%] right-[8%] bottom-[30%] w-px bg-white/15" />
       </div>
     </div>
   )
@@ -129,7 +131,7 @@ export function GarminShowcase() {
               aria-label={front ? undefined : `${page.name} zeigen`}
               onClick={() => !front && show(i)}
               onKeyDown={(e) => !front && (e.key === 'Enter' || e.key === ' ') && show(i)}
-              className="absolute top-[2%] left-1/2 w-[42%] -translate-x-1/2"
+              className="absolute top-[1%] left-1/2 w-[38%] -translate-x-1/2"
               style={{ zIndex: front ? 2 : 1, transformStyle: 'preserve-3d' }}
               initial={false}
               animate={{
