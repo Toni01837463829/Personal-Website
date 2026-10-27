@@ -61,8 +61,10 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
     const onMove = (e: PointerEvent) => send({ type: 'move', x: e.clientX, y: e.clientY })
     const onClick = (e: PointerEvent) => send({ type: 'click', x: e.clientX, y: e.clientY })
 
+    // Nothing covers the field while the page starts at the top; scrolling (also back to a
+    // saved position) and the check below catch it otherwise, without measuring the page
+    // while it is still starting up
     resize()
-    checkCovered()
     // Scrolling is not the only way to get covered: a screenshot opens up without it
     const poll = window.setInterval(checkCovered, 500)
     window.addEventListener('resize', onResize)

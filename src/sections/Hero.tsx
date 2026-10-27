@@ -6,6 +6,10 @@ import { Text3D } from '../components/Text3D'
 import { person } from '../content'
 
 const ease = [0.22, 1, 0.36, 1] as const
+// Where the entrance fades start: 1% rather than 0 looks just the same, but text that is
+// fully transparent when first drawn only counts as shown (Largest Contentful Paint, a
+// speed score) once its fade has ended, a second later
+const faint = 0.01
 
 /**
  * Fades its content out only once it starts leaving past the top of the screen.
@@ -40,7 +44,7 @@ export function Hero() {
         <FadeOnLeave>
           <Depth depth={0.3}>
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: faint, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease }}
               className="mb-8 text-xs font-medium tracking-[0.3em] text-mist uppercase"
@@ -54,7 +58,7 @@ export function Hero() {
                 <motion.span
                   key={i}
                   className="inline-block"
-                  initial={{ opacity: 0, y: '60%', rotateX: -80 }}
+                  initial={{ opacity: faint, y: '60%', rotateX: -80 }}
                   animate={{ opacity: 1, y: 0, rotateX: 0 }}
                   transition={{ duration: 1.1, delay: 0.1 + i * 0.08, ease }}
                 >

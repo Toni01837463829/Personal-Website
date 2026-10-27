@@ -14,6 +14,9 @@ const TILT = -3 // degrees the whole ring leans
 // perspective brings closer stay crisp
 const SHARPNESS = 1.5
 
+// One canvas to measure letters with, shared by all the rings
+let measurer: CanvasRenderingContext2D | null = null
+
 /**
  * Lays the label out around a cylinder: measures every letter, repeats the label until the
  * ring has roughly the wanted radius, and gives each letter its angle on the ring.
@@ -21,7 +24,7 @@ const SHARPNESS = 1.5
 function layoutRing(label: string, vw: number) {
   const fontSize = Math.round(Math.min(104, Math.max(40, vw * 0.065)))
   const target = Math.min(620, Math.max(230, vw * 0.4))
-  const ctx = document.createElement('canvas').getContext('2d')!
+  const ctx = (measurer ??= document.createElement('canvas').getContext('2d')!)
   ctx.font = `700 ${fontSize}px ${FONT}`
   const track = -0.03 * fontSize
 
@@ -58,7 +61,13 @@ export function SectionBreak({ to }: { to: ChapterId }) {
 
   const [ring, setRing] = useState(() => layoutRing(label, window.innerWidth))
   useEffect(() => {
-    const update = () => setRing(layoutRing(label, window.innerWidth))
+    // Only a ring that came out different (the font arrived, the window changed) replaces
+    // the old one, as a new ring means drawing its letters again
+    const update = () =>
+      setRing((old) => {
+        const next = layoutRing(label, window.innerWidth)
+        return next.fontSize === old.fontSize && next.radius === old.radius && next.glyphs.length === old.glyphs.length ? old : next
+      })
     document.fonts.ready.then(update)
     window.addEventListener('resize', update)
     return () => window.removeEventListener('resize', update)
@@ -103,7 +112,19 @@ function SpinningRing({ ring, accent, progress }: { ring: Ring; accent: readonly
   // Coming into view it is still fully faded out (opacity), so an old frame never shows
   const visible = useInView(canvas)
   // The letter pictures survive the ring going off screen and coming back
-  const sprites = useRef<{ ring: Ring; scale: number; set: Sprites } | null>(null)
+  const sprites = useRef<SpriteCache>(null)
+
+  // Made ahead while the browser has nothing else to do, so the frame the ring first shows
+  // up in doesn't have to wait for them
+  useEffect(() => {
+    const make = () => letters(sprites, ring, accent, Math.min(window.devicePixelRatio || 1, 2))
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(make, { timeout: 2000 })
+      return () => cancelIdleCallback(id)
+    }
+    const t = setTimeout(make, 500)
+    return () => clearTimeout(t)
+  }, [ring, accent])
 
   // Redraws in the frame after anything that turns the ring changed, and only while it is on screen
   useEffect(() => {
@@ -116,16 +137,15 @@ function SpinningRing({ ring, accent, progress }: { ring: Ring; accent: readonly
     let w = el.clientWidth
     let h = el.clientHeight
     const draw = () => {
+      // Fully faded out at either end of its way through the screen: nothing to draw yet
+      const p = progress.get()
+      if (p <= 0.05 || p >= 0.95) return
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
       if (el.width !== Math.round(w * dpr) || el.height !== Math.round(h * dpr)) {
         el.width = Math.round(w * dpr)
         el.height = Math.round(h * dpr)
       }
-      const sharp = dpr * SHARPNESS
-      if (sprites.current?.ring !== ring || sprites.current.scale !== sharp) {
-        sprites.current = { ring, scale: sharp, set: makeSprites(ring, accent, sharp) }
-      }
-      paint(ctx, ring, sprites.current.set, { cx: w / 2, cy: bleed + (h - 2 * bleed) / 2, dpr }, scale.get(), rotateX.get(), rotateY.get())
+      paint(ctx, ring, letters(sprites, ring, accent, dpr), { cx: w / 2, cy: bleed + (h - 2 * bleed) / 2, dpr }, scale.get(), rotateX.get(), rotateY.get())
     }
     const schedule = () => frame.render(draw)
     draw()
@@ -141,7 +161,7 @@ function SpinningRing({ ring, accent, progress }: { ring: Ring; accent: readonly
       resize.disconnect()
       cancelFrame(draw)
     }
-  }, [visible, ring, accent, rotateX, rotateY, scale])
+  }, [visible, ring, accent, progress, rotateX, rotateY, scale])
 
   const { fontSize, radius } = ring
   return (
@@ -160,6 +180,16 @@ function SpinningRing({ ring, accent, progress }: { ring: Ring; accent: readonly
 /** A letter drawn once, with the center of its box at (x, y); sizes in css px */
 type Sprite = { img: HTMLCanvasElement; x: number; y: number; w: number; h: number }
 type Sprites = Map<string, { front: Sprite | null; back: Sprite | null }>
+type SpriteCache = { ring: Ring; scale: number; set: Sprites } | null
+
+/** The letters of `ring` for this pixel density, made once and then kept in `cache` */
+function letters(cache: { current: SpriteCache }, ring: Ring, accent: readonly [string, string], dpr: number) {
+  const scale = dpr * SHARPNESS
+  if (cache.current?.ring !== ring || cache.current.scale !== scale) {
+    cache.current = { ring, scale, set: makeSprites(ring, accent, scale) }
+  }
+  return cache.current.set
+}
 
 const withAlpha = (hex: string, a: number) => {
   const n = parseInt(hex.slice(1), 16)

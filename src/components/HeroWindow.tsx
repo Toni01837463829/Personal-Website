@@ -92,7 +92,9 @@ export function HeroWindow() {
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, scale: 0.4, y: 160, filter: 'blur(12px)' }}
+      // 1% rather than 0 to start with, as in sections/Hero.tsx: looks the same, but lets the
+      // browser count the window as shown when it first draws it
+      initial={{ opacity: 0.01, scale: 0.4, y: 160, filter: 'blur(12px)' }}
       // A filter left on here would stop the glass from blurring what is behind the pane
       animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
       transition={{ duration: 1.1, delay: 0.5, ease }}
