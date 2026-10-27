@@ -67,15 +67,23 @@ function Screen({
   )
 }
 
-/** A clean white bike computer shell around the screen. */
+/**
+ * A bike computer in the style of an Edge 1030: a white body with a dark bumper along the
+ * bottom, almost all of its front black glass, the screen near the top and an empty glass
+ * chin below it.
+ */
 function Device({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-[1.9rem] bg-white p-[6%] pb-[14%] shadow-[inset_0_-6px_12px_-6px_rgba(17,21,28,.18),0_40px_70px_-35px_rgba(17,21,28,.55)] ring-1 ring-stone/70">
-      <div className="rounded-[1.2rem] bg-[#0d1015] p-[6%] pb-[8%] shadow-[inset_0_1px_0_rgba(255,255,255,.12)]">
+    <div className="relative overflow-hidden rounded-[17%/10.5%] bg-linear-to-b from-white to-[#eef1f5] p-[3%] pb-[6.5%] shadow-[inset_0_2px_1px_rgba(255,255,255,.9),inset_0_-10px_14px_-10px_rgba(17,21,28,.25),0_40px_70px_-35px_rgba(17,21,28,.55)] ring-1 ring-stone/70">
+      {/* Rubber bumper along the bottom edge */}
+      <span aria-hidden className="absolute inset-x-0 bottom-0 h-[3.5%] bg-linear-to-b from-[#4a5059] to-[#262a31]" />
+      {/* Black glass front, with a faint reflection across it */}
+      <div className="relative rounded-[15%/9.5%] bg-[#0b0d11] px-[5.5%] pt-[8%] pb-[21%] shadow-[inset_0_0_0_1px_rgba(255,255,255,.06),inset_0_1px_0_rgba(255,255,255,.14)]">
         {children}
-      </div>
-      <div className="mt-[9%] flex justify-center">
-        <span className="h-1 w-8 rounded-full bg-stone" />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[linear-gradient(118deg,rgba(255,255,255,.13),rgba(255,255,255,.03)_32%,transparent_33%)]"
+        />
       </div>
     </div>
   )
