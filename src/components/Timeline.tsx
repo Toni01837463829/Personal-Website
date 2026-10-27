@@ -1,4 +1,4 @@
-import { motion, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
+import { motion, useInView, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
 import { useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import type { PathStep } from '../content'
 import { PathIcon } from './Icons'
@@ -111,10 +111,17 @@ export function Timeline({ steps }: { steps: PathStep[] }) {
   const stations = useRef<(HTMLLIElement | null)[]>([])
   const geo = useMotionValue<Geo>({ view: 1, width: 1, lefts: steps.map(() => Infinity), widths: steps.map(() => 1), years: [] })
   const { placed, cells, breaks, width } = layout(steps)
+  // The blinking "now" marks only run while the timeline is on screen
+  const live = useInView(view)
 
+  // Measured when the browser has laid the track out (the observer reports right after
+  // layout, before painting), so it never forces a layout of its own. While the browser
+  // skips the track (content-visibility, far from the screen) there is nothing to measure:
+  // the observer reports the track again once it has been laid out
   useLayoutEffect(() => {
     const measure = () => {
       if (!view.current || !track.current) return
+      if (track.current.checkVisibility?.({ contentVisibilityAuto: true }) === false) return
       geo.set({
         view: view.current.clientWidth,
         width: track.current.offsetWidth,
@@ -126,9 +133,9 @@ export function Timeline({ steps }: { steps: PathStep[] }) {
           .sort((a, b) => a.x - b.x),
       })
     }
-    measure()
     const observer = new ResizeObserver(measure)
     observer.observe(view.current!)
+    observer.observe(track.current!)
     return () => observer.disconnect()
   }, [geo])
 
@@ -154,7 +161,8 @@ export function Timeline({ steps }: { steps: PathStep[] }) {
       style={{ height: `calc(35svh + ${width})` }}
       className="relative [--long:9rem] [--m:2.5rem] md:[--long:13rem] md:[--m:3.5rem]"
     >
-      <div ref={view} className="sticky top-0 h-svh overflow-hidden">
+      {/* Skipped by the browser while away from the screen (content-visibility) */}
+      <div ref={view} className="sticky top-0 h-svh overflow-hidden [content-visibility:auto]">
         <Year tip={tip} geo={geo} />
         <p className="absolute inset-x-0 top-28 mx-auto max-w-6xl px-6 text-xs font-medium tracking-[0.25em] text-mist uppercase md:px-10">
           Mein Weg
@@ -203,6 +211,7 @@ export function Timeline({ steps }: { steps: PathStep[] }) {
               index={i}
               tip={tip}
               geo={geo}
+              live={live}
             />
           ))}
 
@@ -250,12 +259,14 @@ function Station({
   index,
   tip,
   geo,
+  live,
   ref,
 }: {
   placed: Placed
   index: number
   tip: MotionValue<number>
   geo: MotionValue<Geo>
+  live: boolean
   ref: (el: HTMLLIElement | null) => void
 }) {
   const above = index % 2 === 0
@@ -299,7 +310,7 @@ function Station({
         style={{ scale: node, opacity: node }}
         className={`absolute top-1/2 z-10 -mt-1.5 h-3 w-3 rounded-full bg-white ring-2 ring-(--k) ${open ? 'left-[calc(var(--m)/2)] -ml-1.5' : 'left-1/2 -ml-1.5'}`}
       >
-        {open && <span className="absolute -inset-1 animate-ping rounded-full ring-2 ring-(--k)/50" />}
+        {open && live && <span className="absolute -inset-1 animate-ping rounded-full ring-2 ring-(--k)/50" />}
       </motion.span>
 
       <motion.span
@@ -339,7 +350,7 @@ function Station({
                 </span>
                 {open ? (
                   <span className="flex items-center gap-1.5 rounded-full bg-(--k)/10 px-2 py-0.5 text-[11px] font-medium text-(--k)">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-(--k)" />
+                    <span className={`h-1.5 w-1.5 rounded-full bg-(--k) ${live ? 'animate-pulse' : ''}`} />
                     Jetzt
                   </span>
                 ) : (

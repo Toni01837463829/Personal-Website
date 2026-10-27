@@ -1,6 +1,7 @@
-import { useAnimationFrame, useInView, useReducedMotion } from 'motion/react'
-import { useId, useRef } from 'react'
+import { useInView, useReducedMotion } from 'motion/react'
+import { useEffect, useId, useRef } from 'react'
 import { best, bestSectors, cornerReport, current, currentSectors, delta, fmtLap, idealLap, LAP_M, N, sectors, track, type Lap } from '../../sim/lap'
+import { useFrameLoop } from '../../useFrameLoop'
 import { Panel } from './Screen'
 import { ui } from './ui'
 
@@ -95,22 +96,40 @@ export function TelemetryScreen() {
   const distRef = useRef<HTMLSpanElement>(null)
   const root = useRef<HTMLDivElement>(null)
   const visible = useInView(root)
+  const shown = useRef(-1)
 
-  // A cursor replays the lap at 4× speed: slow through corners, fast down the straights
-  useAnimationFrame((t) => {
-    if (!visible || !cursor.current) return
-    const i = reduced ? Math.round(N * 0.36) : indexAt(((t / 1000) * 4) % current.lapTime)
+  // Moves the cursor to sample i. Text is only touched where it changes, as every change
+  // means laying the text out again
+  const show = (i: number) => {
+    if (i === shown.current || !cursor.current) return
+    shown.current = i
     cursor.current.style.transform = `translateX(${x(i)}px)`
     const [mx, my] = mapPoint(i)
     dot.current?.setAttribute('cx', mx.toFixed(1))
     dot.current?.setAttribute('cy', my.toFixed(1))
-    channels.forEach((c, k) => {
-      const el = readouts.current[k]
-      if (el) el.textContent = `${c.fmt(c.pick(current)[i])} / ${c.fmt(c.pick(best)[i])}`
-    })
-    const d = readouts.current[channels.length]
-    if (d) d.textContent = signed(delta[i])
-    if (distRef.current) distRef.current.textContent = `${(i * (LAP_M / N)).toFixed(0)} m`
+    // Changes the text node in place rather than replacing it, which is cheaper to lay out
+    const set = (el: HTMLElement | null, text: string) => {
+      if (!el) return
+      if (el.firstChild instanceof Text) {
+        if (el.firstChild.data !== text) el.firstChild.data = text
+      } else el.textContent = text
+    }
+    channels.forEach((c, k) => set(readouts.current[k], `${c.fmt(c.pick(current)[i])} / ${c.fmt(c.pick(best)[i])}`))
+    set(readouts.current[channels.length], signed(delta[i]))
+    set(distRef.current, `${(i * (LAP_M / N)).toFixed(0)} m`)
+  }
+
+  // A cursor replays the lap at 4× speed: slow through corners, fast down the straights.
+  // It only runs while the screen is in view, and moves at 30 fps (it covers a few px a
+  // second, so that looks the same at half the work); with reduced motion it stands still
+  const moved = useRef(-Infinity)
+  useFrameLoop(visible && !reduced, (t) => {
+    if (t - moved.current < 30) return
+    moved.current = t
+    show(indexAt(((t / 1000) * 4) % current.lapTime))
+  })
+  useEffect(() => {
+    if (reduced) show(Math.round(N * 0.36))
   })
 
 

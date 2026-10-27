@@ -1,6 +1,7 @@
-import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react'
+import { motion, useInView, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react'
 import { memo, useRef, useState, type CSSProperties } from 'react'
 import { accentVars } from '../chapters'
+import { loop } from '../loop'
 import { ActivityWall } from '../components/ActivityWall'
 import { FeuerwehrShowcase } from '../components/FeuerwehrShowcase'
 import { HobbyIcon } from '../components/Icons'
@@ -18,6 +19,8 @@ const pad = (i: number) => String(i).padStart(2, '0')
  * Dark, pinned section: every hobby gets a whole screen in its own color, and scrolling
  * down slides them by from right to left. Each screen takes one viewport height of
  * scrolling, and the page gently snaps so a screen ends up filling the view.
+ * While the section is away from the screen the browser skips drawing it altogether
+ * (content-visibility), so its many 3D pieces cost nothing elsewhere on the page.
  */
 export function Hobbies() {
   const ref = useRef<HTMLElement>(null)
@@ -37,7 +40,7 @@ export function Hobbies() {
       ref={ref}
       data-opaque
       style={{ ...accentVars('hobbys'), height: `${n * 100}svh` }}
-      className="theme-dark relative overflow-clip"
+      className="theme-dark relative overflow-clip [content-visibility:auto]"
     >
       {/* Snap points: one per screen, where that screen exactly fills the view */}
       {hobbies.map((h, i) => (
@@ -185,20 +188,19 @@ const HobbyScreen = memo(function HobbyScreen({ hobby, index }: { hobby: (typeof
 /** The last hobby hands over to the projects: an invitation to keep scrolling, with a bobbing arrow. */
 function ScrollHint() {
   const reduced = useReducedMotion()
+  const ref = useRef<HTMLAnchorElement>(null)
+  const inView = useInView(ref)
   return (
     <a
+      ref={ref}
       href="#projekte"
       className="group mt-8 inline-flex items-center gap-3 rounded-full border border-white/15 bg-[#05070a] py-2.5 pr-2.5 pl-5 text-sm font-medium text-ink shadow-[0_12px_30px_-12px_rgba(0,0,0,.9)] transition-colors hover:border-(--accent-a)/60"
     >
       Scrollen, um meine Projekte zu sehen
       <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/10 transition-colors group-hover:bg-(--accent-a) group-hover:text-white">
-        {/* The bobbing goes on an HTML wrapper: that can run on the compositor, an svg is
-            moved from script every frame, even while the screen is out of view */}
-        <motion.span
-          className="flex"
-          animate={reduced ? undefined : { y: [-3, 3, -3] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-        >
+        {/* The bobbing goes on an HTML wrapper, which can run on the compositor (an svg is
+            moved from script every frame), and only while the hint is in view */}
+        <motion.span className="flex" {...loop(inView && !reduced, { y: [-3, 3, -3] }, { y: 0 }, { duration: 1.6, ease: 'easeInOut' })}>
           <svg
             width="14"
             height="14"

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useInView, useMotionValue, useReducedMotion, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { garminPages } from '../content'
+import { loop } from '../loop'
 import { Depth } from './Mouse'
 import { Rich } from './Rich'
 
@@ -133,10 +134,7 @@ export function GarminShowcase() {
               whileHover={front || reduced ? undefined : { opacity: 1, z: -110 }}
               transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 110, damping: 20 }}
             >
-              <motion.div
-                animate={front && !reduced ? { y: [0, -8, 0] } : { y: 0 }}
-                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-              >
+              <motion.div {...loop(front && visible && !reduced, { y: [0, -8, 0] }, { y: 0 }, { duration: 5, ease: 'easeInOut' })}>
                 <Device>
                   <Screen
                     page={page}
@@ -196,11 +194,13 @@ export function GarminShowcase() {
 /**
  * One device for the hero window: the live graphs page, tilted in space above an orbit
  * with a GPS dot circling it, and a few glass notes floating at different depths.
+ * Everything moves only while it is in view.
  */
 export function GarminHeroVisual() {
   const reduced = useReducedMotion()
   const ref = useRef<HTMLDivElement>(null)
   const visible = useInView(ref)
+  const live = visible && !reduced
   const page = garminPages[2]
   return (
     <div ref={ref} className="relative aspect-[4/3] w-full" style={{ perspective: 1200 }}>
@@ -221,11 +221,7 @@ export function GarminHeroVisual() {
         <div className="h-full w-full" style={{ transform: 'rotateX(74deg)' }}>
           <div className="absolute inset-0 rounded-full border border-stone" />
           <div className="absolute inset-[14%] rounded-full border border-dashed border-stone/80" />
-          <motion.div
-            className="absolute inset-0"
-            animate={reduced ? undefined : { rotate: 360 }}
-            transition={{ duration: 9, repeat: Infinity, ease: 'linear' }}
-          >
+          <motion.div className="absolute inset-0" {...loop(live, { rotate: 360 }, { rotate: 0 }, { duration: 9, ease: 'linear' })}>
             <span className="absolute top-0 left-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent-a)] shadow-[0_0_20px_4px_color-mix(in_srgb,var(--accent-a)_45%,transparent)]" />
           </motion.div>
         </div>
@@ -235,10 +231,12 @@ export function GarminHeroVisual() {
         <motion.div
           style={{ transformStyle: 'preserve-3d' }}
           initial={false}
-          animate={
-            reduced ? { rotateY: -14, rotateX: 6 } : { rotateY: [-16, -8, -16], rotateX: [6, 3, 6], y: [0, -8, 0] }
-          }
-          transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+          {...loop(
+            live,
+            { rotateY: [-16, -8, -16], rotateX: [6, 3, 6], y: [0, -8, 0] },
+            reduced ? { rotateY: -14, rotateX: 6, y: 0 } : { rotateY: -16, rotateX: 6, y: 0 },
+            { duration: 6, ease: 'easeInOut' },
+          )}
         >
           <Device>
             <Screen page={page} load playing={visible && !reduced} loop start={6} />
@@ -250,7 +248,7 @@ export function GarminHeroVisual() {
       <Depth depth={2.2} className="absolute top-[14%] left-0">
         <div className="glass-flat flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium text-ink">
           <span className="relative flex h-2 w-2">
-            {!reduced && <span className="absolute inset-0 animate-ping rounded-full bg-[#e5484d] opacity-70" />}
+            {live && <span className="absolute inset-0 animate-ping rounded-full bg-[#e5484d] opacity-70" />}
             <span className="relative h-2 w-2 rounded-full bg-[#e5484d]" />
           </span>
           Live auf dem Rad
@@ -265,8 +263,7 @@ export function GarminHeroVisual() {
             <motion.span
               className="block h-full origin-left rounded-full bg-[#2fae4e]"
               initial={{ scaleX: 0.92 }}
-              animate={reduced ? undefined : { scaleX: [0.92, 0.74, 0.92] }}
-              transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+              {...loop(live, { scaleX: [0.92, 0.74, 0.92] }, { scaleX: 0.92 }, { duration: 8, ease: 'easeInOut' })}
             />
           </div>
         </div>
@@ -280,8 +277,7 @@ export function GarminHeroVisual() {
                 key={i}
                 className="w-1 rounded-sm bg-[var(--accent-a)]"
                 style={{ height: h }}
-                animate={reduced ? undefined : { scaleY: [1, 0.55, 1] }}
-                transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.12, ease: 'easeInOut' }}
+                {...loop(live, { scaleY: [1, 0.55, 1] }, { scaleY: 1 }, { duration: 1.4, delay: i * 0.12, ease: 'easeInOut' })}
               />
             ))}
           </div>

@@ -1,10 +1,14 @@
-import { AnimatePresence, motion, useAnimationFrame, useInView, useMotionValue, useReducedMotion, useTransform, type MotionValue } from 'motion/react'
-import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useInView, useMotionValue, useReducedMotion, useTransform, type MotionValue } from 'motion/react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { hobbies, projects, simracing } from '../content'
+import { useFrameLoop } from '../useFrameLoop'
 import { Portal, type PortalColors } from './Portal'
 import { Screen } from './sim/Screen'
-import { SetupScreen } from './sim/SetupScreen'
-import { TelemetryScreen } from './sim/TelemetryScreen'
+
+// The drawn screens, and the lap the telemetry simulates when it loads, are a file of their
+// own, fetched once the showcase comes near (see `near` below)
+const TelemetryScreen = lazy(() => import('./sim/TelemetryScreen').then((m) => ({ default: m.TelemetryScreen })))
+const SetupScreen = lazy(() => import('./sim/SetupScreen').then((m) => ({ default: m.SetupScreen })))
 
 // The drawn screens take the sim-racing colors, also when opened up outside the section
 const [simA, simB] = hobbies.find((h) => h.id === 'simracing')!.colors
@@ -25,9 +29,12 @@ export function SimRacingShowcase() {
   const ref = useRef<HTMLDivElement>(null)
   // Off screen (another hobby in view) the orbit stands still and costs nothing
   const visible = useInView(ref)
+  // The drawn screens only load once this comes within a screen of the view: on phones,
+  // where the showcase isn't shown, never
+  const near = useInView(ref, { margin: '100%', once: true })
 
-  useAnimationFrame((_, delta) => {
-    if (visible && !reduced && !paused.current) angle.set(angle.get() + (delta / 1000) * ((2 * Math.PI) / TURN_S))
+  useFrameLoop(visible && !reduced, (_, delta) => {
+    if (!paused.current) angle.set(angle.get() + (delta / 1000) * ((2 * Math.PI) / TURN_S))
   })
 
   return (
@@ -41,7 +48,7 @@ export function SimRacingShowcase() {
       ))}
 
       <div className="absolute top-1/2 left-1/2 z-10 w-[58%] -translate-x-1/2 -translate-y-1/2">
-        <Slides visible={visible} />
+        <Slides visible={visible} near={near} />
       </div>
     </div>
   )
@@ -97,7 +104,7 @@ function OrbitCover({
  * The box in the middle: swipes through the slides on its own while on screen, the tabs
  * above pick one.
  */
-function Slides({ visible }: { visible: boolean }) {
+function Slides({ visible, near }: { visible: boolean; near: boolean }) {
   const [index, setIndex] = useState(0)
   const [hovered, setHovered] = useState(false)
   const [opened, setOpened] = useState(false) // a slide is opened up in front of the page
@@ -160,7 +167,11 @@ function Slides({ visible }: { visible: boolean }) {
               onOpenChange={setOpened}
               colors={(projects.find((p) => slide.image && p.image === slide.image)?.colors as PortalColors | undefined) ?? simColors}
             >
-              {!slide.image && <Screen>{slide.id === 'telemetry' ? <TelemetryScreen /> : <SetupScreen />}</Screen>}
+              {!slide.image && near && (
+                <Screen>
+                  <Suspense fallback={null}>{slide.id === 'telemetry' ? <TelemetryScreen /> : <SetupScreen />}</Suspense>
+                </Screen>
+              )}
             </Portal>
           </motion.div>
         </AnimatePresence>

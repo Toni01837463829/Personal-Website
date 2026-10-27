@@ -1,5 +1,6 @@
-import { motion, useAnimationFrame, useInView, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
+import { motion, useInView, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
 import { useRef, useState, type CSSProperties, type PointerEvent } from 'react'
+import { useFrameLoop } from '../useFrameLoop'
 
 const SLOW = 40 // degrees per second when left alone
 const FAST = 220 // while hovered
@@ -24,8 +25,8 @@ export function Medal3D({ src, alt, height, ratio }: { src: string; alt: string;
   // Only spins while on screen
   const visible = useInView(ref)
 
-  useAnimationFrame((_, delta) => {
-    if (!visible || reduced || drag.current) return
+  useFrameLoop(visible && !reduced, (_, delta) => {
+    if (drag.current) return
     // Ease toward the resting speed, so a flick coasts out
     const target = hover ? FAST : SLOW
     speed.current += (target - speed.current) * Math.min(1, delta / 700)
@@ -53,11 +54,12 @@ export function Medal3D({ src, alt, height, ratio }: { src: string; alt: string;
     maskSize: '100% 100%',
     WebkitMaskSize: '100% 100%',
   }
-  // Light sweeping over the metal as it turns
-  const sheen = useTransform(angle, (a) => {
-    const p = 50 + Math.sin((a * Math.PI) / 180) * 70
-    return `linear-gradient(105deg, transparent ${p - 25}%, rgb(255 236 210 / 0.45) ${p}%, transparent ${p + 25}%)`
-  })
+  // Light sweeping over the metal as it turns: a band of light across the face, at 105°,
+  // its middle swinging 70% of the gradient's length either way. The band is drawn once
+  // and slid sideways, so turning moves it instead of repainting it
+  const across = width * Math.sin((105 * Math.PI) / 180) + height * Math.abs(Math.cos((105 * Math.PI) / 180))
+  const reach = (0.7 * across) / Math.sin((105 * Math.PI) / 180)
+  const sheenX = useTransform(angle, (a) => Math.sin((a * Math.PI) / 180) * reach)
   // Shadow narrows when the badge is edge-on
   const shadowScale = useTransform(angle, (a) => 0.25 + Math.abs(Math.cos((a * Math.PI) / 180)) * 0.75)
 
@@ -112,7 +114,17 @@ export function Medal3D({ src, alt, height, ratio }: { src: string; alt: string;
         {/* Front: the badge itself */}
         <div className="absolute inset-0" style={{ transform: `translateZ(${THICKNESS / 2 + 0.5}px)`, backfaceVisibility: 'hidden' }}>
           <img src={src} alt="" draggable={false} className="h-full w-full" />
-          <motion.div className="absolute inset-0 mix-blend-screen" style={{ ...outline, background: sheen }} />
+          <div className="absolute inset-0 overflow-hidden mix-blend-screen" style={outline}>
+            <motion.div
+              className="absolute inset-y-0 will-change-transform"
+              style={{
+                left: -reach,
+                right: -reach,
+                x: sheenX,
+                background: `linear-gradient(105deg, transparent calc(50% - ${across / 4}px), rgb(255 236 210 / 0.45) 50%, transparent calc(50% + ${across / 4}px))`,
+              }}
+            />
+          </div>
         </div>
       </motion.div>
       {/* On a layer of its own, so narrowing it every frame doesn't repaint and re-blur it */}

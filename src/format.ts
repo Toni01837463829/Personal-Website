@@ -4,8 +4,14 @@ import type { Activity, Sport } from './content'
 
 export const sportName: Record<Sport, string> = { swim: 'Schwimmen', bike: 'Radfahrt', run: 'Lauf' }
 
-const num = (v: number, digits: number) =>
-  v.toLocaleString('de-AT', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+// One formatter per number of digits: building one is slow, and toLocaleString builds a
+// new one on every call
+const formats = new Map<number, Intl.NumberFormat>()
+const num = (v: number, digits: number) => {
+  let f = formats.get(digits)
+  if (!f) formats.set(digits, (f = new Intl.NumberFormat('de-AT', { minimumFractionDigits: digits, maximumFractionDigits: digits })))
+  return f.format(v)
+}
 
 /** 130 km, 67,8 km, 3,3 km */
 export const km = (meters: number) => num(meters / 1000, meters >= 100_000 ? 0 : 1)
