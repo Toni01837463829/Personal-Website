@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, useRef } from 'react'
+import { useLite } from '../lite'
 import { createField, type FieldMessage } from './particleField'
 
 /**
@@ -12,6 +13,10 @@ import { createField, type FieldMessage } from './particleField'
  */
 export function Particles({ accent }: { accent: readonly [string, string] }) {
   const host = useRef<HTMLDivElement>(null)
+  const lite = useLite()
+  const sendRef = useRef<(msg: FieldMessage) => void>(null)
+
+  useEffect(() => sendRef.current?.({ type: 'lite', on: lite }), [lite])
 
   useEffect(() => {
     // A canvas can be handed over only once, so each run makes its own
@@ -42,6 +47,9 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
       stop = field.stop
     }
 
+    sendRef.current = send
+    // The class rather than `lite`: this runs once, and the effect above passes on changes
+    send({ type: 'lite', on: document.documentElement.classList.contains('lite') })
     const resize = () => send({ type: 'resize', w: window.innerWidth, h: window.innerHeight, dpr: Math.min(window.devicePixelRatio || 1, 1.5) })
     // While a solid section or an opened-up screenshot ([data-opaque]) fills the whole
     // screen the field is hidden behind it, so it pauses and leaves the frame to the rest.

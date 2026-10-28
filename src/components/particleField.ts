@@ -28,6 +28,8 @@ export type FieldMessage =
   | { type: 'click'; x: number; y: number }
   // A solid section or an opened-up screenshot fills the screen and hides the field
   | { type: 'covered'; covered: boolean }
+  // Weak graphics chip (see lite.ts): left alone, the field redraws only a few times a second
+  | { type: 'lite'; on: boolean }
 
 // The field shifts from slate (left) to indigo (right); a passing ripple tints toward sky.
 const SLATE = [100, 116, 139]
@@ -49,6 +51,9 @@ const FRAME_MS = 1000 / 60
 // for half the work; while the mouse stirs them or a ripple passes, at up to 60 fps
 const CALM_MS = 32
 const LIVELY_MS = 15
+// In lite mode. Every redraw has the whole screen put together again, which is what a weak
+// chip can't do 30 times a second; the slow drift and fading barely show the difference
+const LITE_CALM_MS = 150
 
 // Colors come from a small palette, in steps across the field and steps toward the ripple
 // color, so a frame sets each color once instead of building one for every dot
@@ -87,6 +92,7 @@ export function createField(canvas: HTMLCanvasElement | OffscreenCanvas, reduced
   let last = 0 // when the field was last drawn
   let settling = false // stirred dots are still easing back onto their paths
   let covered = false
+  let calmMs = CALM_MS
   // Mouse position and how far it moved since the last drawn frame
   const mouse = { x: -9999, y: -9999, dx: 0, dy: 0 }
   // The dots of the frame being drawn, grouped by palette color
@@ -218,7 +224,7 @@ export function createField(canvas: HTMLCanvasElement | OffscreenCanvas, reduced
       return
     }
     const lively = waves.length > 0 || settling || mouse.dx !== 0 || mouse.dy !== 0
-    if (now - last < (lively ? LIVELY_MS : CALM_MS)) return
+    if (now - last < (lively ? LIVELY_MS : calmMs)) return
     // After a long gap (covered, tab in the background) the dots don't jump ahead
     const step = Math.min(now - last, 100) / FRAME_MS
     last = now
@@ -248,6 +254,9 @@ export function createField(canvas: HTMLCanvasElement | OffscreenCanvas, reduced
           break
         case 'covered':
           covered = msg.covered
+          break
+        case 'lite':
+          calmMs = msg.on ? LITE_CALM_MS : CALM_MS
           break
       }
     },

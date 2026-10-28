@@ -11,6 +11,9 @@
   --font-sans: 'Inter Variable', system-ui, sans-serif;
 }
 
+/* Lite mode for weak graphics chips (see lite.ts) */
+@custom-variant lite (&:where(.lite, .lite *));
+
 /* Section accent; each section overrides these (see chapters.ts) */
 :root {
   --accent-a: #4338ca;
@@ -46,6 +49,13 @@ body {
     0 20px 50px -30px rgb(17 21 28 / 0.25);
   backdrop-filter: blur(10px) saturate(140%);
   -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+/* In lite mode glass is frosted without the blur, a little more opaque to make up for it */
+.lite .glass {
+  background: rgb(255 255 255 / 0.78);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 /* The same surface without the blur, for small, mostly opaque pieces where the blur barely

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useInView, useMotionValue, useReducedMotion, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { garminPages } from '../content'
+import { useLite } from '../lite'
 import { loop } from '../loop'
 import { Depth } from './Mouse'
 import { Rich } from './Rich'
@@ -98,6 +99,7 @@ function Device({ children }: { children: ReactNode }) {
  */
 export function GarminShowcase() {
   const reduced = useReducedMotion()
+  const lite = useLite()
   const ref = useRef<HTMLDivElement>(null)
   const near = useInView(ref, { once: true, margin: '300px' })
   const visible = useInView(ref, { amount: 0.3 })
@@ -144,7 +146,7 @@ export function GarminShowcase() {
               whileHover={front || reduced ? undefined : { opacity: 1, z: -110 }}
               transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 110, damping: 20 }}
             >
-              <motion.div {...loop(front && visible && !reduced, { y: [0, -8, 0] }, { y: 0 }, { duration: 5, ease: 'easeInOut' })}>
+              <motion.div {...loop(front && visible && !reduced && !lite, { y: [0, -8, 0] }, { y: 0 }, { duration: 5, ease: 'easeInOut' })}>
                 <Device>
                   <Screen
                     page={page}
@@ -208,9 +210,12 @@ export function GarminShowcase() {
  */
 export function GarminHeroVisual() {
   const reduced = useReducedMotion()
+  const lite = useLite()
   const ref = useRef<HTMLDivElement>(null)
   const visible = useInView(ref)
-  const live = visible && !reduced
+  const playing = visible && !reduced
+  // In lite mode (see lite.ts) the video still plays, but nothing around it moves
+  const live = playing && !lite
   const page = garminPages[2]
   return (
     <div ref={ref} className="relative aspect-[4/3] w-full" style={{ perspective: 1200 }}>
@@ -249,7 +254,7 @@ export function GarminHeroVisual() {
           )}
         >
           <Device>
-            <Screen page={page} load playing={visible && !reduced} loop start={6} />
+            <Screen page={page} load playing={playing} loop start={6} />
           </Device>
         </motion.div>
       </Depth>

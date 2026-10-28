@@ -425,7 +425,7 @@ function Expanded({
       style={{ ...colorVars(colors), ...(dark && ({ '--accent-a': colors[0], '--accent-b': colors[1] } as CSSProperties)) }}
     >
       <motion.div
-        className={`absolute inset-0 backdrop-blur-md ${dark ? 'bg-[#05070a]/65' : 'bg-paper/50'}`}
+        className={`absolute inset-0 backdrop-blur-md lite:backdrop-filter-none ${dark ? 'bg-[#05070a]/65 lite:bg-[#05070a]/85' : 'bg-paper/50 lite:bg-paper/85'}`}
         data-cursor="✕"
         onClick={onClose}
         initial={{ opacity: 0 }}

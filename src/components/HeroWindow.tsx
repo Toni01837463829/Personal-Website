@@ -122,7 +122,7 @@ export function HeroWindow() {
         // The border: a hairline gradient from bright to faint, like light on a glass edge
         className="group relative rounded-[1.75rem] bg-linear-to-br from-white via-white/50 to-white/25 p-px shadow-[0_40px_80px_-40px_rgba(17,21,28,.4)]"
       >
-        <div className="relative overflow-hidden rounded-[calc(1.75rem-1px)] bg-white/45 shadow-[inset_0_1px_0_rgba(255,255,255,.8)] backdrop-blur-xl backdrop-saturate-150">
+        <div className="relative overflow-hidden rounded-[calc(1.75rem-1px)] bg-white/45 shadow-[inset_0_1px_0_rgba(255,255,255,.8)] backdrop-blur-xl backdrop-saturate-150 lite:bg-white/80 lite:backdrop-filter-none">
           {/* The glare is drawn once and slides along with the mouse */}
           <motion.div
             aria-hidden
