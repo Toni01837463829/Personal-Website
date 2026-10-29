@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useInView, useMotionValue, useReducedMotion, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { garminPages } from '../content'
+import { useLite } from '../lite'
 import { glow } from './glow'
 import { Depth } from './Mouse'
 import { usePauseOffscreen } from './offscreen'
@@ -68,15 +69,25 @@ function Screen({
   )
 }
 
-/** A clean white bike computer shell around the screen. */
+/**
+ * A bike computer drawn after the Edge 1030 (without the brand name), in its proportions:
+ * a white body showing as a thin rim around a front of black glass with strongly rounded
+ * corners, the screen set in from the sides and top with a tall empty chin below it, a
+ * white lip under the glass and the darker underside with the buttons below that.
+ */
 function Device({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-[1.9rem] bg-white p-[6%] pb-[14%] shadow-[inset_0_-6px_12px_-6px_rgba(17,21,28,.18),0_40px_70px_-35px_rgba(17,21,28,.55)] ring-1 ring-stone/70">
-      <div className="rounded-[1.2rem] bg-[#0d1015] p-[6%] pb-[8%] shadow-[inset_0_1px_0_rgba(255,255,255,.12)]">
-        {children}
+    <div>
+      <div className="relative rounded-[22%/11.5%] bg-linear-to-b from-white via-[#f8f9fb] to-[#e6eaef] px-[1.2%] pt-[4.7%] pb-[6.6%] shadow-[inset_3px_0_4px_-2px_rgba(17,21,28,.12),inset_-3px_0_4px_-2px_rgba(17,21,28,.12),inset_0_2px_1px_#fff,inset_0_-4px_6px_-3px_rgba(17,21,28,.18),0_40px_70px_-35px_rgba(17,21,28,.55)] ring-1 ring-stone/60">
+        <div className="rounded-[21%/11.6%] bg-linear-to-b from-[#0f1114] to-[#08090b] px-[10%] pt-[20%] pb-[31%] shadow-[inset_0_0_0_1px_rgba(255,255,255,.06)]">
+          {/* The display's own thin dark border inside the glass */}
+          <div className="shadow-[0_0_0_1px_#22262c]">{children}</div>
+        </div>
       </div>
-      <div className="mt-[9%] flex justify-center">
-        <span className="h-1 w-8 rounded-full bg-stone" />
+      {/* Underside, with the lap and start buttons */}
+      <div className="relative mx-auto -mt-[1%] aspect-[196/20] w-[77%] rounded-b-[45%_100%] bg-linear-to-b from-[#555b64] via-[#2a2e35] to-[#17191d] shadow-[0_6px_10px_-6px_rgba(17,21,28,.5)]">
+        <span aria-hidden className="absolute top-[15%] bottom-[30%] left-[8%] w-px bg-white/15" />
+        <span aria-hidden className="absolute top-[15%] right-[8%] bottom-[30%] w-px bg-white/15" />
       </div>
     </div>
   )
@@ -89,6 +100,7 @@ function Device({ children }: { children: ReactNode }) {
  */
 export function GarminShowcase() {
   const reduced = useReducedMotion()
+  const lite = useLite()
   const ref = useRef<HTMLDivElement>(null)
   const near = useInView(ref, { once: true, margin: '300px' })
   const visible = useInView(ref, { amount: 0.3 })
@@ -127,7 +139,7 @@ export function GarminShowcase() {
               aria-label={front ? undefined : `${page.name} zeigen`}
               onClick={() => !front && show(i)}
               onKeyDown={(e) => !front && (e.key === 'Enter' || e.key === ' ') && show(i)}
-              className="absolute top-[2%] left-1/2 w-[42%] -translate-x-1/2"
+              className="absolute top-[1%] left-1/2 w-[38%] -translate-x-1/2"
               style={{ zIndex: front ? 2 : 1, transformStyle: 'preserve-3d' }}
               initial={false}
               animate={{
@@ -136,12 +148,11 @@ export function GarminShowcase() {
                 z: front ? 0 : -160,
                 scale: front ? 1 : 0.86,
                 opacity: front ? 1 : 0.75,
-                filter: front ? 'brightness(1) blur(0px)' : 'brightness(.97) blur(0.5px)',
               }}
               whileHover={front || reduced ? undefined : { opacity: 1, z: -110 }}
               transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 110, damping: 20 }}
             >
-              <div className={front ? 'motion-safe:animate-[float_5s_ease-in-out_infinite]' : undefined}>
+              <div className={front && !lite ? 'motion-safe:animate-[float_5s_ease-in-out_infinite]' : undefined}>
                 <Device>
                   <Screen
                     page={page}
@@ -173,7 +184,7 @@ export function GarminShowcase() {
             {i === active && !reduced && (
               <motion.span
                 aria-hidden
-                className="absolute inset-x-3 bottom-0.5 h-0.5 origin-left rounded-full bg-ink/60"
+                className="absolute inset-x-3 bottom-0.5 h-0.5 origin-left rounded-full bg-ink/60 will-change-transform"
                 style={{ scaleX: progress }}
               />
             )}
@@ -185,9 +196,9 @@ export function GarminShowcase() {
           <motion.p
             key={active}
             className="[grid-area:1/1]"
-            initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, y: -6, filter: 'blur(4px)' }}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.4 }}
           >
             <Rich text={garminPages[active].text} />
@@ -201,12 +212,19 @@ export function GarminShowcase() {
 /**
  * One device for the hero window: the live graphs page, tilted in space above an orbit
  * with a GPS dot circling it, and a few glass notes floating at different depths.
+ * Everything moves only while it is in view.
  */
 export function GarminHeroVisual() {
   const reduced = useReducedMotion()
+  const lite = useLite()
   const ref = useRef<HTMLDivElement>(null)
   usePauseOffscreen(ref)
-  const live = useInView(ref)
+  const visible = useInView(ref)
+  const playing = visible && !reduced
+  // In lite mode (see lite.ts) the video still plays, but nothing around it moves
+  const live = playing && !lite
+  // The CSS loops (index.css); off screen they pause on their own (usePauseOffscreen)
+  const loops = !lite
   const page = garminPages[2]
   return (
     <div ref={ref} className="relative aspect-[4/3] w-full" style={{ perspective: 1200 }}>
@@ -225,7 +243,7 @@ export function GarminHeroVisual() {
         <div className="h-full w-full" style={{ transform: 'rotateX(74deg)' }}>
           <div className="absolute inset-0 rounded-full border border-stone" />
           <div className="absolute inset-[14%] rounded-full border border-dashed border-stone/80" />
-          <div className="absolute inset-0 motion-safe:animate-[spin_9s_linear_infinite]">
+          <div className={`absolute inset-0 ${loops ? 'motion-safe:animate-[spin_9s_linear_infinite]' : ''}`}>
             <span className="absolute top-0 left-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--accent-a)] shadow-[0_0_20px_4px_color-mix(in_srgb,var(--accent-a)_45%,transparent)]" />
           </div>
         </div>
@@ -233,19 +251,20 @@ export function GarminHeroVisual() {
 
       <Depth depth={0.8} className="absolute top-[1%] left-1/2 w-[36%] -translate-x-1/2">
         <div
-          className="motion-safe:animate-[device-float_6s_ease-in-out_infinite]"
+          className={loops ? 'motion-safe:animate-[device-float_6s_ease-in-out_infinite]' : undefined}
           style={{ transformStyle: 'preserve-3d', transform: 'rotateX(6deg) rotateY(-14deg)' }}
         >
           <Device>
-            <Screen page={page} load playing={!reduced && live} loop start={6} />
+            <Screen page={page} load playing={playing} loop start={6} />
           </Device>
         </div>
       </Depth>
 
+      {/* The notes float on the frosted window already, so they skip a blur of their own */}
       <Depth depth={2.2} className="absolute top-[14%] left-0">
-        <div className="glass flex items-center gap-2 rounded-full bg-white/70! px-3.5 py-2 text-xs font-medium text-ink">
+        <div className="glass-flat flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium text-ink">
           <span className="relative flex h-2 w-2">
-            {!reduced && <span className="absolute inset-0 animate-ping rounded-full bg-[#e5484d] opacity-70" />}
+            {live && <span className="absolute inset-0 animate-ping rounded-full bg-[#e5484d] opacity-70" />}
             <span className="relative h-2 w-2 rounded-full bg-[#e5484d]" />
           </span>
           Live auf dem Rad
@@ -253,12 +272,12 @@ export function GarminHeroVisual() {
       </Depth>
 
       <Depth depth={1.6} className="absolute top-[40%] right-0 w-[34%]">
-        <div className="glass rounded-2xl bg-white/75! p-3.5">
+        <div className="glass-flat rounded-2xl p-3.5">
           <p className="text-[10px] tracking-widest text-mist uppercase">Carb Fuel</p>
           <p className="mt-1 text-sm font-medium">Glykogen live</p>
           <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-sand">
             <span
-              className="block h-full origin-left rounded-full bg-[#2fae4e] motion-safe:animate-[carb_8s_ease-in-out_infinite]"
+              className={`block h-full origin-left rounded-full bg-[#2fae4e] ${loops ? 'motion-safe:animate-[carb_8s_ease-in-out_infinite]' : ''}`}
               style={{ transform: 'scaleX(0.92)' }}
             />
           </div>
@@ -266,12 +285,12 @@ export function GarminHeroVisual() {
       </Depth>
 
       <Depth depth={2.8} className="absolute bottom-[4%] left-[2%]">
-        <div className="glass flex items-center gap-3 rounded-2xl bg-white/75! px-3.5 py-2.5">
+        <div className="glass-flat flex items-center gap-3 rounded-2xl px-3.5 py-2.5">
           <div className="flex items-end gap-0.5">
             {[5, 9, 7, 12, 10, 14].map((h, i) => (
               <span
                 key={i}
-                className="w-1 rounded-sm bg-[var(--accent-a)] motion-safe:animate-[level_1.4s_ease-in-out_infinite]"
+                className={`w-1 rounded-sm bg-[var(--accent-a)] ${loops ? 'motion-safe:animate-[level_1.4s_ease-in-out_infinite]' : ''}`}
                 style={{ height: h, animationDelay: `${i * 0.12}s` }}
               />
             ))}

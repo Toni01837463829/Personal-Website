@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, useRef } from 'react'
+import { useLite } from '../lite'
 import { glow } from './glow'
 import { createField, type Field } from './particleField'
 import type { FieldMessage } from './particles.worker'
@@ -19,6 +20,10 @@ const SCROLL_HOLD_MS = 150
  */
 export function Particles({ accent }: { accent: readonly [string, string] }) {
   const ref = useRef<HTMLDivElement>(null)
+  // Lite mode (see lite.ts) can switch on later, once the page turns out to stutter
+  const lite = useLite()
+  const sendRef = useRef<((message: Exclude<FieldMessage, { type: 'init' }>) => void) | null>(null)
+  useEffect(() => sendRef.current?.({ type: 'lite', on: lite }), [lite])
 
   useEffect(() => {
     const box = ref.current
@@ -43,8 +48,12 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
       const field = createField(canvas, reduced)
       field.resize(...size())
       local = field
-      send = (m) => (m.type === 'resize' ? field.resize(...m.size) : m.type === 'hold' ? field.hold(m.held) : field[m.type](m.x, m.y))
+      send = (m) =>
+        m.type === 'resize' ? field.resize(...m.size) : m.type === 'hold' ? field.hold(m.held) : m.type === 'lite' ? field.lite(m.on) : field[m.type](m.x, m.y)
     }
+    sendRef.current = send
+    // The class rather than `lite`: this runs once, the effect above passes on changes
+    send({ type: 'lite', on: document.documentElement.classList.contains('lite') })
 
     // Held while a solid section ([data-opaque]) fills the whole screen (the field is hidden
     // behind it) and while the page scrolls
@@ -84,6 +93,13 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('pointerdown', onClick)
     window.addEventListener('pointermove', onMove)
+    // Scrolling is not the only way to get covered: a screenshot opened up in front of the page
+    // (Portal.tsx) covers it too, and it appears without any scrolling
+    const overlays = new MutationObserver(() => {
+      checkCovered()
+      update()
+    })
+    overlays.observe(document.body, { childList: true })
     return () => {
       worker?.terminate()
       local?.stop()
@@ -93,6 +109,7 @@ export function Particles({ accent }: { accent: readonly [string, string] }) {
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('pointerdown', onClick)
       window.removeEventListener('pointermove', onMove)
+      overlays.disconnect()
     }
   }, [])
 

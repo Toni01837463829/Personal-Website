@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useInView, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
+import { AnimatePresence, motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { hobbies, person, projects } from '../content'
 import { glowMask } from './glow'
@@ -81,7 +81,6 @@ export function HeroWindow() {
   const gy = useMotionValue(0)
   const rotateY = useSpring(useTransform(mx, (v) => (reduced ? 0 : v * 5)), { stiffness: 120, damping: 20 })
   const rotateX = useSpring(useTransform(my, (v) => (reduced ? 0 : v * -4)), { stiffness: 120, damping: 20 })
-  const glare = useMotionTemplate`radial-gradient(420px circle at ${gx}px ${gy}px, rgb(255 255 255 / 0.32), transparent 60%)`
 
   const onMove = (e: PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
@@ -96,7 +95,9 @@ export function HeroWindow() {
       ref={ref}
       // No blur on the way in: blurring the whole pane, glass included, is too much for
       // laptops without a graphics card, right when the page is busiest
-      initial={{ opacity: 0, scale: 0.4, y: 160 }}
+      // 1% rather than 0 to start with: looks the same, but lets the browser count the window
+      // as shown when it first draws it (see sections/Hero.tsx)
+      initial={{ opacity: 0.01, scale: 0.4, y: 160 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 1.1, delay: 0.5, ease }}
       style={{ transformOrigin: '50% 100%' }}
@@ -123,11 +124,12 @@ export function HeroWindow() {
         // The border: a hairline gradient from bright to faint, like light on a glass edge
         className="group relative rounded-[1.75rem] bg-linear-to-br from-white via-white/50 to-white/25 p-px shadow-[0_40px_80px_-40px_rgba(17,21,28,.4)]"
       >
-        <div className="relative overflow-hidden rounded-[calc(1.75rem-1px)] bg-white/45 shadow-[inset_0_1px_0_rgba(255,255,255,.8)] backdrop-blur-xl backdrop-saturate-150">
+        <div className="relative overflow-hidden rounded-[calc(1.75rem-1px)] bg-white/45 shadow-[inset_0_1px_0_rgba(255,255,255,.8)] backdrop-blur-xl backdrop-saturate-150 lite:bg-white/80 lite:backdrop-filter-none">
+          {/* The glare is drawn once and slides along with the mouse */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute inset-0 z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-            style={{ background: glare }}
+            className="pointer-events-none absolute -top-[420px] -left-[420px] z-10 size-[840px] opacity-0 transition-opacity duration-500 will-change-transform group-hover:opacity-100"
+            style={{ x: gx, y: gy, background: 'radial-gradient(closest-side, rgb(255 255 255 / 0.32), transparent 60%)' }}
           />
 
           {/* Tabs in a glass pill, with the address underneath */}

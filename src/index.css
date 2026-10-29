@@ -11,6 +11,9 @@
   --font-sans: 'Inter Variable', system-ui, sans-serif;
 }
 
+/* Lite mode for weak graphics chips (see lite.ts) */
+@custom-variant lite (&:where(.lite, .lite *));
+
 /* Section accent; each section overrides these (see chapters.ts) */
 :root {
   --accent-a: #4338ca;
@@ -44,8 +47,25 @@ body {
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.6) inset,
     0 20px 50px -30px rgb(17 21 28 / 0.25);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+/* In lite mode glass is frosted without the blur, a little more opaque to make up for it */
+.lite .glass {
+  background: rgb(255 255 255 / 0.78);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* The same surface without the blur, for small, mostly opaque pieces where the blur barely
+   shows but would still be redrawn every frame */
+@utility glass-flat {
+  background: rgb(255 255 255 / 0.8);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.6) inset,
+    0 20px 50px -30px rgb(17 21 28 / 0.25);
 }
 
 /* Hollow letters, tinted with the section accent */
@@ -54,14 +74,15 @@ body {
   -webkit-text-stroke: 1.5px color-mix(in srgb, var(--accent-a) 40%, transparent);
 }
 
-/* Solid letters with a few px of depth underneath and a soft shadow */
+/* Solid letters with a few px of depth underneath. No blurred drop shadow: on the ring
+   (components/SectionBreak.tsx) every letter is its own 3D layer, and a blur makes each
+   of them several times larger to draw */
 @utility text-extrude {
   text-shadow:
     0 1px 0 #d3dae3,
     0 2px 0 #c7cfd9,
     0 3px 0 #bbc4cf,
-    0 4px 0 #afb9c5,
-    0 18px 30px rgb(17 21 28 / 0.18);
+    0 4px 0 #afb9c5;
 }
 
 /* Solid accent color for small labels */

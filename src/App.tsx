@@ -29,7 +29,7 @@ function ChapterFrame() {
         style={{ scaleX: progress }}
         animate={{ backgroundImage: `linear-gradient(90deg, ${a}, ${b})` }}
         transition={{ duration: 0.8 }}
-        className="fixed inset-x-0 top-0 z-50 h-1 origin-left"
+        className="fixed inset-x-0 top-0 z-50 h-1 origin-left will-change-transform"
       />
       <SectionNav active={active} />
     </>

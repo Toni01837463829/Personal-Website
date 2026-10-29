@@ -1,5 +1,6 @@
 import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
 import { useRef, type PointerEvent } from 'react'
+import { useLite } from '../lite'
 import angular from '../assets/tech/angular.svg'
 import cplusplus from '../assets/tech/cplusplus.svg'
 import csharp from '../assets/tech/csharp.svg'
@@ -75,9 +76,11 @@ function Card({ tech, dark }: { tech: Tech; dark?: boolean }) {
  * What I work with, as a wall of logo cards on a tilted plane: one row per group,
  * gliding endlessly in alternating directions. The plane leans toward the mouse,
  * a hovered row stops and its card lifts. `dark` gives the cards a dark face.
+ * In lite mode (see lite.ts) the rows stand still.
  */
 export function TechWall({ dark }: { dark?: boolean }) {
   const reduced = useReducedMotion()
+  const lite = useLite()
   const ref = useRef<HTMLDivElement>(null)
   // The rows only glide while the wall is on screen
   const visible = useInView(ref)
@@ -126,7 +129,7 @@ export function TechWall({ dark }: { dark?: boolean }) {
               <div
                 className="flex w-max group-hover/row:[animation-play-state:paused]"
                 style={
-                  reduced
+                  reduced || lite
                     ? undefined
                     : {
                         animation: `tech-marquee ${row.seconds}s linear infinite`,

@@ -8,6 +8,7 @@ export type FieldMessage =
   | { type: 'resize'; size: [number, number, number] }
   | { type: 'move' | 'click'; x: number; y: number }
   | { type: 'hold'; held: boolean }
+  | { type: 'lite'; on: boolean }
 
 let field: Field | null = null
 
@@ -17,5 +18,6 @@ self.onmessage = ({ data }: MessageEvent<FieldMessage>) => {
     field.resize(...data.size)
   } else if (data.type === 'resize') field?.resize(...data.size)
   else if (data.type === 'hold') field?.hold(data.held)
+  else if (data.type === 'lite') field?.lite(data.on)
   else field?.[data.type](data.x, data.y)
 }

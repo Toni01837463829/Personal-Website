@@ -1,6 +1,7 @@
-import { AnimatePresence, motion, useAnimationFrame, useInView, useMotionValue, useReducedMotion, useTransform, type MotionValue } from 'motion/react'
+import { AnimatePresence, motion, useInView, useMotionValue, useReducedMotion, useTransform, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { hobbies, projects, simracing } from '../content'
+import { useFrameLoop } from '../useFrameLoop'
 import { glow } from './glow'
 import { Portal, type PortalColors } from './Portal'
 import { Screen } from './sim/Screen'
@@ -27,8 +28,8 @@ export function SimRacingShowcase() {
   // Off screen (another hobby in view) the orbit stands still and costs nothing
   const visible = useInView(ref)
 
-  useAnimationFrame((_, delta) => {
-    if (visible && !reduced && !paused.current) angle.set(angle.get() + (delta / 1000) * ((2 * Math.PI) / TURN_S))
+  useFrameLoop(visible && !reduced, (_, delta) => {
+    if (!paused.current) angle.set(angle.get() + (delta / 1000) * ((2 * Math.PI) / TURN_S))
   })
 
   return (
@@ -127,7 +128,7 @@ function Slides() {
             role="tab"
             aria-selected={i === index}
             onClick={() => pick(i)}
-            className={`relative overflow-hidden rounded-full border bg-[#0c1016]/80 px-3 py-1 text-[11px] font-medium whitespace-nowrap backdrop-blur transition-colors ${
+            className={`relative overflow-hidden rounded-full border bg-[#0c1016]/80 px-3 py-1 text-[11px] font-medium whitespace-nowrap transition-colors ${
               i === index ? 'border-(--accent-a)/50 text-ink' : 'border-white/10 text-mist hover:text-ink'
             }`}
           >

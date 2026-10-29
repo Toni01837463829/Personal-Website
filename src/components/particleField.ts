@@ -26,6 +26,7 @@ export type Field = {
   click: (x: number, y: number) => void
   /** Held, the field stands still: while a section covers it, or while the page scrolls */
   hold: (held: boolean) => void
+  lite: (on: boolean) => void
   stop: () => void
 }
 
@@ -55,6 +56,9 @@ const R_MAX = 2.8
 // Calm frames (nothing stirred, no ripple) are drawn at 30 fps: the drift and the fading are
 // slow enough that it looks the same, at half the cost
 const CALM_FRAME_MS = 1000 / 30
+// In lite mode (weak graphics chip, see lite.ts) only a few times a second: every redraw has
+// the whole screen put together again, which is what such a chip can't keep up with
+const LITE_CALM_MS = 150
 
 const mix = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(v + (b[i] - v) * t))
 const radius = (size: number) => R_MIN + (size / (SIZES - 1)) * (R_MAX - R_MIN)
@@ -87,7 +91,7 @@ export function createField(canvas: FieldCanvas, reduced: boolean): Field {
   // Both canvas kinds draw the same; one type keeps the drawing code simple
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D | null
   // No canvas to draw on (blocked or out of memory): no field, and nothing else breaks
-  if (!ctx) return { resize() {}, move() {}, click() {}, hold() {}, stop() {} }
+  if (!ctx) return { resize() {}, move() {}, click() {}, hold() {}, lite() {}, stop() {} }
   const raf: (f: (now: number) => void) => number =
     typeof requestAnimationFrame === 'function' ? requestAnimationFrame : (f) => setTimeout(() => f(performance.now()), 16) as unknown as number
   const cancel = typeof cancelAnimationFrame === 'function' ? cancelAnimationFrame : clearTimeout
@@ -103,6 +107,7 @@ export function createField(canvas: FieldCanvas, reduced: boolean): Field {
   let clock = 0
   let last = 0
   let held = false
+  let calmMs = CALM_FRAME_MS
   let settling = false // dots still easing back after being stirred
   // Mouse position and how far it moved since the last frame
   const mouse = { x: -9999, y: -9999, dx: 0, dy: 0 }
@@ -190,7 +195,7 @@ export function createField(canvas: FieldCanvas, reduced: boolean): Field {
       return
     }
     const calm = !settling && waves.length === 0 && Math.abs(mouse.dx) + Math.abs(mouse.dy) <= 0.05
-    if (calm && dt < CALM_FRAME_MS - 4) return
+    if (calm && dt < calmMs - 4) return
     last = now
     clock += dt
     draw(dt)
@@ -239,6 +244,9 @@ export function createField(canvas: FieldCanvas, reduced: boolean): Field {
     },
     hold(value) {
       held = value
+    },
+    lite(on) {
+      calmMs = on ? LITE_CALM_MS : CALM_FRAME_MS
     },
     stop() {
       cancel(frame)

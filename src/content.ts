@@ -92,7 +92,7 @@ export const projects: {
     text: 'Eigene Dashboards für den Simulator: **Telemetrie**, Rundenzeiten, Abstände, Stint-Rechner, …',
     tags: ['Telemetrie', 'Live-Daten'],
     visual: 'portal',
-    image: 'projects/simracing-dashboard.webp',
+    image: 'projects/simracing-dashboard.mp4',
     caption: 'Live-Dashboard',
     colors: ['#22c55e', '#22d3ee', '#a855f7'],
   },
@@ -164,7 +164,7 @@ export const simracing = {
   slides: [
     { id: 'telemetry' as const, label: 'Telemetrie', caption: 'Runde im Detail', image: undefined as string | undefined },
     { id: 'setup' as const, label: 'Car Setup', caption: 'GT3 · Trocken', image: undefined as string | undefined },
-    { id: 'dashboard' as const, label: 'Dashboard', caption: 'Mein Live-Dashboard', image: 'projects/simracing-dashboard.webp' as string | undefined },
+    { id: 'dashboard' as const, label: 'Dashboard', caption: 'Mein Live-Dashboard', image: 'projects/simracing-dashboard.mp4' as string | undefined },
   ],
 }
 

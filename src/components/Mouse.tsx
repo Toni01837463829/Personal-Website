@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, type ReactNode, type RefObject } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode, type RefObject } from 'react'
 import {
   motion,
   useMotionValue,
@@ -28,7 +28,9 @@ export function PointerProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('pointermove', onMove)
   }, [rawX, rawY])
 
-  return <PointerContext.Provider value={{ x, y }}>{children}</PointerContext.Provider>
+  // The same object every render, so the page re-rendering doesn't re-render every user
+  const pointer = useMemo(() => ({ x, y }), [x, y])
+  return <PointerContext.Provider value={pointer}>{children}</PointerContext.Provider>
 }
 
 export function usePointer() {
