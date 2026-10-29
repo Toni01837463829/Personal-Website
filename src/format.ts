@@ -4,8 +4,13 @@ import type { Activity, Sport } from './content'
 
 export const sportName: Record<Sport, string> = { swim: 'Schwimmen', bike: 'Radfahrt', run: 'Lauf' }
 
-const num = (v: number, digits: number) =>
-  v.toLocaleString('de-AT', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+// One formatter per number of decimals: setting one up is far slower than using it
+const formats = new Map<number, Intl.NumberFormat>()
+const num = (v: number, digits: number) => {
+  let f = formats.get(digits)
+  if (!f) formats.set(digits, (f = new Intl.NumberFormat('de-AT', { minimumFractionDigits: digits, maximumFractionDigits: digits })))
+  return f.format(v)
+}
 
 /** 130 km, 67,8 km, 3,3 km */
 export const km = (meters: number) => num(meters / 1000, meters >= 100_000 ? 0 : 1)
@@ -26,6 +31,7 @@ export function pace(a: Activity) {
   return `${minSec(a.movingTime / (a.distance / 100))} /100 m`
 }
 
+const dateFormat = new Intl.DateTimeFormat('de-AT', { day: 'numeric', month: 'long', year: 'numeric' })
+
 /** 18. Juli 2026 */
-export const longDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('de-AT', { day: 'numeric', month: 'long', year: 'numeric' })
+export const longDate = (iso: string) => dateFormat.format(new Date(iso))

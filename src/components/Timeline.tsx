@@ -1,7 +1,8 @@
 import { motion, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react'
-import { useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react'
 import type { PathStep } from '../content'
 import { PathIcon } from './Icons'
+import { usePauseOffscreen } from './offscreen'
 
 /** Where things sit along the track, in px; measured, so it follows the screen size */
 type Geo = { view: number; width: number; lefts: number[]; widths: number[]; years: { x: number; year: number }[] }
@@ -111,8 +112,11 @@ export function Timeline({ steps }: { steps: PathStep[] }) {
   const stations = useRef<(HTMLLIElement | null)[]>([])
   const geo = useMotionValue<Geo>({ view: 1, width: 1, lefts: steps.map(() => Infinity), widths: steps.map(() => 1), years: [] })
   const { placed, cells, breaks, width } = layout(steps)
+  usePauseOffscreen(ref)
 
-  useLayoutEffect(() => {
+  // After the first paint, so it reads the layout the browser makes anyway instead of forcing
+  // one of the whole page while it loads (the timeline is below the fold, nothing to see yet)
+  useEffect(() => {
     const measure = () => {
       if (!view.current || !track.current) return
       geo.set({
@@ -233,7 +237,7 @@ function Year({ tip, geo }: { tip: MotionValue<number>; geo: MotionValue<Geo> })
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="text-outline absolute -right-[0.04em] -bottom-[0.18em] text-[clamp(9rem,26vw,24rem)] leading-none font-bold tracking-tighter select-none"
+      className="text-outline absolute -right-[0.04em] -bottom-[0.18em] text-[clamp(9rem,26vw,24rem)] leading-none font-bold tracking-tighter will-change-transform select-none"
     >
       {current}
     </motion.span>
@@ -313,7 +317,7 @@ function Station({
 
       <motion.div
         style={{ opacity: cardOpacity, y: cardY }}
-        className={`pointer-events-auto absolute w-60 -translate-x-1/2 md:w-68 ${open ? 'left-[calc(var(--m)/2)]' : 'left-1/2'} ${
+        className={`pointer-events-auto absolute w-60 -translate-x-1/2 will-change-[opacity,transform] md:w-68 ${open ? 'left-[calc(var(--m)/2)]' : 'left-1/2'} ${
           above ? 'bottom-[calc(50%+3.25rem)]' : 'top-[calc(50%+3.25rem)]'
         }`}
       >

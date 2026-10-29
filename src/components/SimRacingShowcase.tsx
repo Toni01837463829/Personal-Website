@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useAnimationFrame, useInView, useMotionValue, useReducedMotion, useTransform, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { hobbies, projects, simracing } from '../content'
+import { glow } from './glow'
 import { Portal, type PortalColors } from './Portal'
 import { Screen } from './sim/Screen'
 import { SetupScreen } from './sim/SetupScreen'
@@ -32,7 +33,7 @@ export function SimRacingShowcase() {
 
   return (
     <div ref={ref} className="relative mx-auto aspect-[100/96] w-full max-w-[38rem]">
-      <div aria-hidden className="absolute inset-[15%] rounded-full bg-(--accent-a) opacity-25 blur-[100px]" />
+      <div aria-hidden className="absolute -inset-[32%]" style={{ background: glow('var(--accent-a)', 0.2) }} />
       {/* The ring the games travel on */}
       <div aria-hidden className="absolute inset-x-[4%] inset-y-[6%] rounded-[50%] border border-white/[0.06]" />
 
@@ -75,7 +76,8 @@ function OrbitCover({
         whileHover={{ scale: 1.1, opacity: 1 }}
         onPointerEnter={() => onHover(true)}
         onPointerLeave={() => onHover(false)}
-        className="group pointer-events-auto absolute top-1/2 left-1/2 w-[28%] -translate-x-1/2 -translate-y-1/2"
+        // Its own layer: circling then only moves it, instead of repainting it every frame
+        className="group pointer-events-auto absolute top-1/2 left-1/2 w-[28%] -translate-x-1/2 -translate-y-1/2 will-change-[transform,opacity]"
       >
         <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0c1016] shadow-[0_24px_40px_-20px_rgba(0,0,0,.9)] transition-[border-color,box-shadow] duration-300 group-hover:border-(--accent-a)/60 group-hover:shadow-[0_20px_50px_-15px_color-mix(in_srgb,var(--accent-a)_50%,transparent)]">
           <img
@@ -96,9 +98,13 @@ function OrbitCover({
 /** The box in the middle: swipes through the slides on its own, the tabs above pick one. */
 function Slides() {
   const [index, setIndex] = useState(0)
-  const [hold, setHold] = useState(false)
+  const [hover, setHover] = useState(false)
   const [opened, setOpened] = useState(false) // a slide is opened up in front of the page
   const [run, setRun] = useState(0) // restarts the timer bar when a tab is picked
+  const ref = useRef<HTMLDivElement>(null)
+  // Also holds still while another hobby is on screen
+  const inView = useInView(ref)
+  const hold = hover || !inView
   const slide = simracing.slides[index]
 
   useEffect(() => {
@@ -113,7 +119,7 @@ function Slides() {
   }
 
   return (
-    <div onPointerEnter={() => setHold(true)} onPointerLeave={() => setHold(false)}>
+    <div ref={ref} onPointerEnter={() => setHover(true)} onPointerLeave={() => setHover(false)}>
       <div role="tablist" aria-label="Sim-Racing" className="mb-3 flex justify-center gap-1.5">
         {simracing.slides.map((s, i) => (
           <button
@@ -147,6 +153,8 @@ function Slides() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: -60, scale: 0.96 }}
             transition={{ type: 'spring', stiffness: 220, damping: 28 }}
+            // Swiping moves the drawn screen as it is, instead of repainting it every frame
+            className="will-change-transform"
           >
             <Portal
               dark

@@ -4,6 +4,13 @@ import { duration, km, longDate, pace, sportName } from '../format'
 import { SportIcon } from './Icons'
 
 const draw = { duration: 1.1, delay: 0.1, ease: [0.65, 0, 0.35, 1] } as const
+// Width and opacity of the strokes that make up the route's glow, widest first
+const glowStrokes = [
+  [64, 0.03],
+  [46, 0.04],
+  [32, 0.05],
+  [20, 0.07],
+] as const
 
 /**
  * Card that pops out next to the activity wall while a tile is hovered: the route (or the
@@ -109,23 +116,24 @@ function RouteMap({ id, route }: { id: string; route: [number, number][] }) {
           <stop offset="0" stopColor="var(--accent-b)" />
           <stop offset="1" stopColor="var(--accent-a)" />
         </linearGradient>
-        <filter id={`glow-${id}`} x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur stdDeviation="14" />
-        </filter>
       </defs>
-      <motion.path
-        d={d}
-        fill="none"
-        stroke="var(--accent-a)"
-        strokeWidth="18"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        opacity={0.35}
-        filter={`url(#glow-${id})`}
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={draw}
-      />
+      {/* The glow: a few wide, faint strokes on top of each other (a blur filter would be
+          recomputed on every frame of the drawing) */}
+      {glowStrokes.map(([width, opacity]) => (
+        <motion.path
+          key={width}
+          d={d}
+          fill="none"
+          stroke="var(--accent-a)"
+          strokeWidth={width}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity={opacity}
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={draw}
+        />
+      ))}
       <motion.path
         d={d}
         fill="none"

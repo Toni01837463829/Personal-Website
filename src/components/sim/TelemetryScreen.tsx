@@ -205,9 +205,10 @@ export function TelemetryScreen() {
               </span>
             </div>
 
+            {/* Own layer: moving it every frame doesn't repaint the charts underneath */}
             <div
               ref={cursor}
-              className="pointer-events-none absolute top-5 bottom-6 w-px"
+              className="pointer-events-none absolute top-5 bottom-6 w-px will-change-transform"
               style={{ left: 8 + LABEL_W, background: '#ffffffaa', boxShadow: '0 0 6px #ffffff55' }}
             />
           </div>

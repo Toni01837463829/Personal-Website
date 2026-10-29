@@ -1,5 +1,5 @@
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
-import type { PointerEvent } from 'react'
+import { motion, useInView, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
+import { useRef, type PointerEvent } from 'react'
 import angular from '../assets/tech/angular.svg'
 import cplusplus from '../assets/tech/cplusplus.svg'
 import csharp from '../assets/tech/csharp.svg'
@@ -78,6 +78,9 @@ function Card({ tech, dark }: { tech: Tech; dark?: boolean }) {
  */
 export function TechWall({ dark }: { dark?: boolean }) {
   const reduced = useReducedMotion()
+  const ref = useRef<HTMLDivElement>(null)
+  // The rows only glide while the wall is on screen
+  const visible = useInView(ref)
   const px = useMotionValue(0)
   const py = useMotionValue(0)
   const sx = useSpring(px, { stiffness: 80, damping: 18 })
@@ -94,6 +97,7 @@ export function TechWall({ dark }: { dark?: boolean }) {
 
   return (
     <div
+      ref={ref}
       className="relative h-full w-full overflow-hidden"
       style={{ perspective: 900 }}
       onPointerMove={onMove}
@@ -127,6 +131,7 @@ export function TechWall({ dark }: { dark?: boolean }) {
                     : {
                         animation: `tech-marquee ${row.seconds}s linear infinite`,
                         animationDirection: ri % 2 ? 'reverse' : 'normal',
+                        animationPlayState: visible ? undefined : 'paused',
                       }
                 }
               >

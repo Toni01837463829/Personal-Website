@@ -1,10 +1,10 @@
-import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react'
-import { memo, useRef, useState, type CSSProperties } from 'react'
+import { motion, useInView, useMotionValueEvent, useScroll, useSpring, useTransform } from 'motion/react'
+import { lazy, memo, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { accentVars } from '../chapters'
 import { ActivityWall } from '../components/ActivityWall'
 import { FeuerwehrShowcase } from '../components/FeuerwehrShowcase'
 import { HobbyIcon } from '../components/Icons'
-import { SimRacingShowcase } from '../components/SimRacingShowcase'
+import { usePauseOffscreen } from '../components/offscreen'
 import { StravaBadge } from '../components/StravaBadge'
 import { TechWall } from '../components/TechWall'
 import { Rich } from '../components/Rich'
@@ -13,6 +13,9 @@ import { hobbies, projects } from '../content'
 
 const n = hobbies.length
 const pad = (i: number) => String(i).padStart(2, '0')
+
+// The sim-racing screen brings a whole simulated lap with it: loaded only when it's needed
+const SimRacingShowcase = lazy(() => import('../components/SimRacingShowcase').then((m) => ({ default: m.SimRacingShowcase })))
 
 /**
  * Dark, pinned section: every hobby gets a whole screen in its own color, and scrolling
@@ -31,6 +34,19 @@ export function Hobbies() {
 
   const [a, b] = hobbies[current].colors
 
+  // The visuals on the right are most of the page's weight, and far below the fold: they
+  // come in one by one in quiet moments after loading, or all at once when the section nears
+  const near = useInView(ref, { margin: '100% 0px', once: true })
+  const [ready, setReady] = useState(0)
+  useEffect(() => {
+    if (ready >= n) return
+    const idle = window.requestIdleCallback ?? ((f: () => void) => window.setTimeout(f, 300))
+    const cancel = window.cancelIdleCallback ?? window.clearTimeout
+    const id = idle(() => setReady((v) => v + 1), { timeout: 4000 })
+    return () => cancel(id)
+  }, [ready])
+  const visuals = near ? n : ready
+
   return (
     <section
       id="hobbys"
@@ -47,7 +63,7 @@ export function Hobbies() {
       <div className="sticky top-0 h-svh overflow-hidden">
         <motion.div style={{ x, width: `${n * 100}%` }} className="flex h-full will-change-transform">
           {hobbies.map((h, i) => (
-            <HobbyScreen key={h.id} hobby={h} index={i} />
+            <HobbyScreen key={h.id} hobby={h} index={i} visual={i < visuals} />
           ))}
         </motion.div>
 
@@ -86,12 +102,15 @@ export function Hobbies() {
  * One hobby as a full screen: text on the left, its own visual on the right. Memoized, so
  * the counter changing while scrolling doesn't re-render every screen.
  */
-const HobbyScreen = memo(function HobbyScreen({ hobby, index }: { hobby: (typeof hobbies)[number]; index: number }) {
+const HobbyScreen = memo(function HobbyScreen({ hobby, index, visual }: { hobby: (typeof hobbies)[number]; index: number; visual: boolean }) {
   const count = projects.filter((p) => p.hobby === hobby.id).length
   const [a, b] = hobby.colors
+  const ref = useRef<HTMLElement>(null)
+  usePauseOffscreen(ref)
 
   return (
     <article
+      ref={ref}
       style={{ '--accent-a': a, '--accent-b': b } as CSSProperties}
       className="relative h-full flex-1 overflow-hidden"
     >
@@ -149,13 +168,15 @@ const HobbyScreen = memo(function HobbyScreen({ hobby, index }: { hobby: (typeof
           )}
         </div>
 
-        {hobby.id === 'triathlon' ? (
+        {!visual ? null : hobby.id === 'triathlon' ? (
           <div className="hidden md:block">
             <ActivityWall />
           </div>
         ) : hobby.id === 'simracing' ? (
           <div className="hidden md:block">
-            <SimRacingShowcase />
+            <Suspense fallback={null}>
+              <SimRacingShowcase />
+            </Suspense>
           </div>
         ) : hobby.id === 'coding' ? (
           // The logo wall from the hero, with dark cards and soft edges
@@ -184,7 +205,6 @@ const HobbyScreen = memo(function HobbyScreen({ hobby, index }: { hobby: (typeof
 
 /** The last hobby hands over to the projects: an invitation to keep scrolling, with a bobbing arrow. */
 function ScrollHint() {
-  const reduced = useReducedMotion()
   return (
     <a
       href="#projekte"
@@ -192,7 +212,7 @@ function ScrollHint() {
     >
       Scrollen, um meine Projekte zu sehen
       <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white/10 transition-colors group-hover:bg-(--accent-a) group-hover:text-white">
-        <motion.svg
+        <svg
           width="14"
           height="14"
           viewBox="0 0 14 14"
@@ -202,11 +222,10 @@ function ScrollHint() {
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden
-          animate={reduced ? undefined : { y: [-3, 3, -3] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+          className="motion-safe:animate-[bob_1.6s_ease-in-out_infinite]"
         >
           <path d="M7 1.5v10M2.5 7.5 7 12l4.5-4.5" />
-        </motion.svg>
+        </svg>
       </span>
     </a>
   )

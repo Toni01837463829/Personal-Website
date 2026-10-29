@@ -1,6 +1,7 @@
-import { AnimatePresence, motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
-import { useEffect, useState, type PointerEvent } from 'react'
+import { AnimatePresence, motion, useInView, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { hobbies, person, projects } from '../content'
+import { glowMask } from './glow'
 import { Portal } from './Portal'
 import { HobbyIcon } from './Icons'
 import { GarminHeroVisual } from './GarminShowcase'
@@ -56,10 +57,13 @@ const ease = [0.22, 1, 0.36, 1] as const
 export function HeroWindow() {
   const reduced = useReducedMotion()
   const [index, setIndex] = useState(0)
-  // Hold the current slide while the mouse is on the window or a screenshot is opened up
+  // Hold the current slide while the mouse is on the window, a screenshot is opened up, or
+  // the window is scrolled out of view
   const [hovered, setHovered] = useState(false)
   const [popout, setPopout] = useState(false)
-  const paused = hovered || popout
+  const ref = useRef<HTMLDivElement>(null)
+  const inView = useInView(ref)
+  const paused = hovered || popout || !inView
 
   useEffect(() => {
     if (paused) return
@@ -89,9 +93,11 @@ export function HeroWindow() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.4, y: 160, filter: 'blur(12px)' }}
-      // A filter left on here would stop the glass from blurring what is behind the pane
-      animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', transitionEnd: { filter: 'none' } }}
+      ref={ref}
+      // No blur on the way in: blurring the whole pane, glass included, is too much for
+      // laptops without a graphics card, right when the page is busiest
+      initial={{ opacity: 0, scale: 0.4, y: 160 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 1.1, delay: 0.5, ease }}
       style={{ transformOrigin: '50% 100%' }}
       className="relative w-full"
@@ -99,7 +105,8 @@ export function HeroWindow() {
       {/* Light behind the glass in the colors of the slide */}
       <motion.div
         aria-hidden
-        className="absolute inset-[6%] rounded-full opacity-25 blur-3xl"
+        className="absolute -inset-[24%] opacity-25"
+        style={{ maskImage: glowMask('flat') }}
         animate={{ background: `linear-gradient(135deg, ${a}, ${b})` }}
         transition={{ duration: 1 }}
       />
@@ -174,9 +181,9 @@ export function HeroWindow() {
               <motion.div
                 key={index}
                 className="[grid-area:1/1] px-10 pt-4 pb-10"
-                initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.6, delay: 0.2, ease } }}
-                exit={{ opacity: 0, y: -12, filter: 'blur(6px)', transition: { duration: 0.25, ease } }}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0, transition: { duration: 0.6, delay: 0.2, ease } }}
+                exit={{ opacity: 0, y: -12, transition: { duration: 0.25, ease } }}
               >
                 <p className="flex items-center gap-2 text-xs font-medium tracking-[0.2em] text-mist uppercase">
                   <span className="h-1.5 w-1.5 rounded-full" style={{ background: `linear-gradient(135deg, ${a}, ${b})` }} />

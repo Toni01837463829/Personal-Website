@@ -91,8 +91,9 @@ export function Cursor() {
           )}
         </AnimatePresence>
       </motion.div>
+      {/* Own layer, so following the mouse doesn't repaint anything */}
       <motion.div
-        className={`absolute top-0 left-0 h-1.5 w-1.5 rounded-full transition-colors duration-200 ${
+        className={`absolute top-0 left-0 h-1.5 w-1.5 rounded-full transition-colors duration-200 will-change-transform ${
           overLink ? 'bg-[var(--accent-a)]' : 'bg-ink shadow-[0_0_0_1.5px_rgba(255,255,255,.75)]'
         }`}
         style={{ x, y, translateX: '-50%', translateY: '-50%' }}

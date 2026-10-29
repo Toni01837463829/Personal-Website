@@ -1,37 +1,11 @@
 import { motion } from 'motion/react'
 import { useEffect, useRef } from 'react'
+import { glow } from './glow'
+import { createField, type Field } from './particleField'
+import type { FieldMessage } from './particles.worker'
 
-type Particle = {
-  x: number
-  y: number
-  vx: number
-  vy: number
-  r: number
-  a: number // peak opacity
-  tint: number // small random offset on top of the screen-wide color gradient
-  pulse: number // fade speed
-  phase: number
-  ox: number // offset from being stirred by the mouse, eases back to 0
-  oy: number
-}
-
-type Wave = { x: number; y: number; start: number }
-
-// The field shifts from slate (left) to indigo (right); a passing ripple tints toward sky.
-const SLATE = [100, 116, 139]
-const INDIGO = [118, 128, 230]
-const RIPPLE = [14, 165, 233]
-
-const WAVE_SPEED = 0.22 // px per ms
-const WAVE_WIDTH = 200 // px, how thick the ripple band is
-const WAVE_LIFE = 6500 // ms
-const WAVE_PUSH = 22 // px, max displacement
-
-const STIR_RADIUS = 150 // px around the mouse that gets stirred
-const STIR_STRENGTH = 0.05 // share of the mouse's movement passed on to nearby dots
-const STIR_MAX = 18 // px, how far a dot can be pushed away from its path
-
-const mix = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(v + (b[i] - v) * t))
+// While the page scrolls the field holds still, leaving the frame to the scrolling
+const SCROLL_HOLD_MS = 150
 
 /**
  * A dense field of small, crisp, slowly drifting dots that fade in and out, behind the
@@ -39,181 +13,111 @@ const mix = (a: number[], b: number[], t: number) => a.map((v, i) => Math.round(
  * settle back once it stops; a click sends a ripple outward that pushes the dots out and
  * back as it passes and briefly shifts their color. Two soft glows behind the field take
  * on the accent of the section in view.
+ *
+ * The field itself (particleField.ts) runs in a worker where the browser can hand a canvas
+ * over to one, so it neither waits for nor slows down the rest of the page.
  */
 export function Particles({ accent }: { accent: readonly [string, string] }) {
-  const ref = useRef<HTMLCanvasElement>(null)
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const canvas = ref.current
-    const ctx = canvas?.getContext('2d')
-    if (!canvas || !ctx) return
+    const box = ref.current
+    if (!box) return
+    // A fresh canvas per mount: one that was handed to a worker can't be handed over again
+    const canvas = document.createElement('canvas')
+    canvas.className = 'absolute inset-0 h-full w-full'
+    box.append(canvas)
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    let particles: Particle[] = []
-    let waves: Wave[] = []
-    let w = 0
-    let h = 0
-    let frame = 0
-    // Mouse position and how far it moved since the last frame
-    const mouse = { x: -9999, y: -9999, dx: 0, dy: 0 }
+    const size = (): [number, number, number] => [window.innerWidth, window.innerHeight, Math.min(window.devicePixelRatio || 1, 2)]
 
-    const resize = () => {
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      w = window.innerWidth
-      h = window.innerHeight
-      canvas.width = w * dpr
-      canvas.height = h * dpr
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      const count = Math.round(Math.min(1600, (w * h) / 850))
-      particles = Array.from({ length: count }, () => {
-        const size = Math.random() ** 3 // mostly tiny, a few bigger
-        return {
-          x: Math.random() * w,
-          y: Math.random() * h,
-          vx: (Math.random() - 0.5) * 0.12,
-          vy: (Math.random() - 0.5) * 0.12 - 0.03,
-          r: 0.6 + size * 2.2,
-          a: 0.3 + Math.random() * 0.45,
-          tint: (Math.random() - 0.5) * 0.35,
-          pulse: 0.0003 + Math.random() * 0.0009,
-          phase: Math.random() * Math.PI * 2,
-          ox: 0,
-          oy: 0,
-        }
-      })
+    let worker: Worker | null = null
+    let local: Field | null = null
+    let send: (message: Exclude<FieldMessage, { type: 'init' }>) => void
+    if (typeof canvas.transferControlToOffscreen === 'function') {
+      worker = new Worker(new URL('./particles.worker.ts', import.meta.url), { type: 'module' })
+      const offscreen = canvas.transferControlToOffscreen()
+      worker.postMessage({ type: 'init', canvas: offscreen, reduced, size: size() } satisfies FieldMessage, [offscreen])
+      send = (message) => worker!.postMessage(message)
+    } else {
+      const field = createField(canvas, reduced)
+      field.resize(...size())
+      local = field
+      send = (m) => (m.type === 'resize' ? field.resize(...m.size) : m.type === 'hold' ? field.hold(m.held) : field[m.type](m.x, m.y))
     }
 
-    // While a solid section ([data-opaque]) fills the whole screen the field is hidden
-    // behind it, so it pauses and leaves the frame to the scrolling
+    // Held while a solid section ([data-opaque]) fills the whole screen (the field is hidden
+    // behind it) and while the page scrolls
+    let held = false
     let covered = false
+    let scrolling = 0
+    const update = () => {
+      const next = covered || scrolling !== 0
+      if (next !== held) send({ type: 'hold', held: (held = next) })
+    }
     const checkCovered = () => {
       covered = [...document.querySelectorAll('[data-opaque]')].some((el) => {
         const r = el.getBoundingClientRect()
-        return r.top <= 0 && r.bottom >= window.innerHeight
+        return r.top <= 1 && r.bottom >= window.innerHeight - 1
       })
     }
-
-    const draw = (now: number) => {
-      if (covered && !reduced) {
-        frame = requestAnimationFrame(draw)
-        return
-      }
-      ctx.clearRect(0, 0, w, h)
-      waves = waves.filter((wv) => now - wv.start < WAVE_LIFE)
-      const stirring = Math.abs(mouse.dx) + Math.abs(mouse.dy) > 0.05
-
-      for (const p of particles) {
-        if (!reduced) {
-          p.x += p.vx
-          p.y += p.vy
-          if (p.x < -5) p.x = w + 5
-          if (p.x > w + 5) p.x = -5
-          if (p.y < -5) p.y = h + 5
-          if (p.y > h + 5) p.y = -5
-
-          // Stirred along by a moving mouse, then easing back onto its path
-          if (stirring) {
-            const sx = p.x + p.ox - mouse.x
-            const sy = p.y + p.oy - mouse.y
-            const d2 = sx * sx + sy * sy
-            if (d2 < STIR_RADIUS * STIR_RADIUS) {
-              const fall = 1 - Math.sqrt(d2) / STIR_RADIUS
-              const k = fall * fall * STIR_STRENGTH * (0.6 + p.r / 3)
-              p.ox = Math.max(-STIR_MAX, Math.min(STIR_MAX, p.ox + mouse.dx * k))
-              p.oy = Math.max(-STIR_MAX, Math.min(STIR_MAX, p.oy + mouse.dy * k))
-            }
-          }
-          p.ox *= 0.96
-          p.oy *= 0.96
-        }
-
-        // Ripple: inside the moving band the dot swings out and back (one sine period),
-        // weighted by a bell curve so the band has soft edges, fading as the wave ages.
-        let dx = 0
-        let dy = 0
-        let hit = 0
-        for (const wv of waves) {
-          const age = now - wv.start
-          const ex = p.x - wv.x
-          const ey = p.y - wv.y
-          const d = Math.hypot(ex, ey) || 1
-          const band = (d - age * WAVE_SPEED) / WAVE_WIDTH
-          if (band < -2 || band > 2) continue
-          const env = Math.exp(-band * band * 2) * (1 - age / WAVE_LIFE) ** 1.5
-          const swing = Math.sin(band * Math.PI) * env * WAVE_PUSH
-          dx += (ex / d) * swing
-          dy += (ey / d) * swing
-          hit = Math.max(hit, env)
-        }
-
-        const breathe = reduced ? 0.8 : 0.5 + 0.5 * Math.sin(now * p.pulse + p.phase)
-        const alpha = Math.min(1, p.a * (0.1 + 0.9 * breathe) + hit * 0.3)
-        if (alpha < 0.02) continue
-
-        const across = Math.min(1, Math.max(0, p.x / w + p.tint))
-        const [r, g, b] = mix(mix(SLATE, INDIGO, across), RIPPLE, hit * 0.7)
-        ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`
-        ctx.beginPath()
-        ctx.arc(p.x + p.ox + dx, p.y + p.oy + dy, p.r, 0, Math.PI * 2)
-        ctx.fill()
-      }
-      // The movement has been used up; the next pointermove brings new
-      mouse.dx = 0
-      mouse.dy = 0
-
-      if (!reduced) frame = requestAnimationFrame(draw)
-    }
-
-    const onMove = (e: PointerEvent) => {
-      if (mouse.x > -9999) {
-        mouse.dx += e.clientX - mouse.x
-        mouse.dy += e.clientY - mouse.y
-      }
-      mouse.x = e.clientX
-      mouse.y = e.clientY
-    }
-
-    const onClick = (e: PointerEvent) => {
-      if (reduced) return
-      waves.push({ x: e.clientX, y: e.clientY, start: performance.now() })
-      if (waves.length > 4) waves.shift()
-    }
-
-    resize()
-    checkCovered()
-    frame = requestAnimationFrame(draw)
-    const onResize = () => {
-      resize()
+    const onScroll = () => {
       checkCovered()
-      if (reduced) draw(performance.now())
+      clearTimeout(scrolling)
+      scrolling = window.setTimeout(() => {
+        scrolling = 0
+        update()
+      }, SCROLL_HOLD_MS)
+      update()
     }
+    const onResize = () => {
+      send({ type: 'resize', size: size() })
+      checkCovered()
+      update()
+    }
+    const onMove = (e: PointerEvent) => send({ type: 'move', x: e.clientX, y: e.clientY })
+    const onClick = (e: PointerEvent) => send({ type: 'click', x: e.clientX, y: e.clientY })
+
+    checkCovered()
+    update()
     window.addEventListener('resize', onResize)
-    window.addEventListener('scroll', checkCovered, { passive: true })
+    window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('pointerdown', onClick)
     window.addEventListener('pointermove', onMove)
     return () => {
-      cancelAnimationFrame(frame)
+      worker?.terminate()
+      local?.stop()
+      clearTimeout(scrolling)
+      canvas.remove()
       window.removeEventListener('resize', onResize)
-      window.removeEventListener('scroll', checkCovered)
+      window.removeEventListener('scroll', onScroll)
       window.removeEventListener('pointerdown', onClick)
       window.removeEventListener('pointermove', onMove)
     }
   }, [])
 
+  // Large soft lights as gradients (a blur filter this wide would be redrawn with every
+  // change around it); the accent ones fade to the new color through a CSS variable
   return (
-    <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+    <div ref={ref} aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <motion.div
-        animate={{ backgroundColor: accent[1] }}
+        initial={false}
+        animate={{ '--glow': accent[1] }}
         transition={{ duration: 1.6, ease: 'easeInOut' }}
-        className="absolute -top-40 -left-40 h-[36rem] w-[36rem] rounded-full opacity-20 blur-3xl"
+        className="absolute -top-80 -left-80 h-[56rem] w-[56rem]"
+        style={{ background: glow('var(--glow)', 0.2, 'flat') }}
       />
       <motion.div
-        animate={{ backgroundColor: accent[0] }}
+        initial={false}
+        animate={{ '--glow': accent[0] }}
         transition={{ duration: 1.6, ease: 'easeInOut' }}
-        className="absolute top-1/3 -right-48 h-[40rem] w-[40rem] rounded-full opacity-15 blur-3xl"
+        className="absolute top-[calc(33.333%-10rem)] -right-88 h-[60rem] w-[60rem]"
+        style={{ background: glow('var(--glow)', 0.15, 'flat') }}
       />
-      <div className="absolute -bottom-48 left-1/4 h-[34rem] w-[34rem] rounded-full bg-slate-300/40 blur-3xl" />
-      <canvas ref={ref} className="absolute inset-0 h-full w-full" />
+      <div
+        className="absolute -bottom-88 left-[calc(25%-10rem)] h-[54rem] w-[54rem]"
+        style={{ background: glow('oklch(86.9% 0.022 252.894)', 0.4, 'flat') }}
+      />
     </div>
   )
 }

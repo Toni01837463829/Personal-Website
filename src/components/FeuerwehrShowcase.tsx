@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { feuerwehr, projects } from '../content'
+import { glow } from './glow'
 import { Medal3D } from './Medal3D'
 import { Portal, type PortalColors } from './Portal'
 
@@ -12,7 +13,7 @@ const site = projects.find((p) => p.hobby === 'feuerwehr' && p.visual === 'porta
 export function FeuerwehrShowcase() {
   return (
     <div className="relative z-10 mx-auto w-full max-w-[34rem]">
-      <div aria-hidden className="absolute inset-[15%] rounded-full bg-(--accent-a) opacity-20 blur-[100px]" />
+      <div aria-hidden className="absolute -inset-x-[33%] -inset-y-[29%]" style={{ background: glow('var(--accent-a)', 0.17) }} />
 
       <div className="relative flex justify-center gap-14">
         {feuerwehr.medals.map((m, i) => (

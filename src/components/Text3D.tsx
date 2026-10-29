@@ -1,6 +1,6 @@
-import { motion, useReducedMotion, useTransform } from 'motion/react'
-import type { ReactNode } from 'react'
-import { usePointer } from './Mouse'
+import { motion, useReducedMotion } from 'motion/react'
+import { useRef, type ReactNode } from 'react'
+import { useOnScreen, usePointerValue } from './Mouse'
 
 /**
  * Text that floats in 3D with the mouse: it shifts by `depth` (higher = closer to the
@@ -17,17 +17,18 @@ export function Text3D({
   className?: string
   children: ReactNode
 }) {
-  const { x, y } = usePointer()
+  const ref = useRef<HTMLDivElement>(null)
+  const onScreen = useOnScreen(ref)
   const reduced = useReducedMotion()
   const k = reduced ? 0 : depth
 
-  const tx = useTransform(x, (v) => v * k * 14)
-  const ty = useTransform(y, (v) => v * k * 14)
-  const rotateY = useTransform(x, (v) => (tilt ? v * k * 6 : 0))
-  const rotateX = useTransform(y, (v) => (tilt ? v * k * -5 : 0))
+  const tx = usePointerValue(onScreen, (x) => x * k * 14)
+  const ty = usePointerValue(onScreen, (_, y) => y * k * 14)
+  const rotateY = usePointerValue(onScreen, (x) => (tilt ? x * k * 6 : 0))
+  const rotateX = usePointerValue(onScreen, (_, y) => (tilt ? y * k * -5 : 0))
 
   return (
-    <motion.div className={className} style={{ x: tx, y: ty, rotateX, rotateY, transformPerspective: 900 }}>
+    <motion.div ref={ref} className={className} style={{ x: tx, y: ty, rotateX, rotateY, transformPerspective: 900 }}>
       {children}
     </motion.div>
   )

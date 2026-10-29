@@ -1,11 +1,12 @@
-import { motion, useInView, useReducedMotion, useTransform } from 'motion/react'
+import { motion, useInView, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
 import { strava, stravaActivities, type Activity } from '../content'
 import { km, sportName } from '../format'
 import { ActivityCard } from './ActivityCard'
+import { glow } from './glow'
 import { SportIcon } from './Icons'
 import { StravaLogo } from './StravaBadge'
-import { usePointer } from './Mouse'
+import { useOnScreen, usePointerValue } from './Mouse'
 
 // How far each tile floats in front of the wall, so the grid shows some depth when it tilts
 const depths = [30, 10, 45, 15, 55, 20, 40, 5, 25, 50, 12, 35, 22, 60, 8, 42, 18, 52, 28, 14]
@@ -26,12 +27,12 @@ const teaseOrder = (turn: number) => (turn * teaseStep) % stravaActivities.lengt
  * reads as something to play with.
  */
 export function ActivityWall() {
-  const { x, y } = usePointer()
   const reduced = useReducedMotion()
-  const rotateY = useTransform(x, (v) => (reduced ? 0 : v * 16))
-  const rotateX = useTransform(y, (v) => (reduced ? 0 : v * -12))
-
   const wall = useRef<HTMLDivElement>(null)
+  const onScreen = useOnScreen(wall)
+  const rotateY = usePointerValue(onScreen, (x) => (reduced ? 0 : x * 16))
+  const rotateX = usePointerValue(onScreen, (_, y) => (reduced ? 0 : y * -12))
+
   const [shown, setShown] = useState<Activity | null>(null)
   const [cardY, setCardY] = useState(0)
   // Until the first hover, tiles take turns lifting by themselves, hinting that they react
@@ -68,7 +69,7 @@ export function ActivityWall() {
   return (
     <div ref={wall} style={{ perspective: 1200 }} className="relative z-10 mx-auto w-full max-w-[min(30rem,calc((100svh-19rem)*0.8))]">
       {/* Accent light behind the tiles, glowing through their tinted glass */}
-      <div aria-hidden className="absolute inset-[12%] rounded-full bg-(--accent-a) opacity-30 blur-[90px]" />
+      <div aria-hidden className="absolute -inset-x-[54%] -inset-y-[35%]" style={{ background: glow('var(--accent-a)', 0.23) }} />
       <h4 className="relative mb-5 flex items-center gap-2.5 text-lg font-semibold tracking-tight">
         <StravaLogo className="h-5 w-5 text-[#fc5200]" />
         {strava.heading}

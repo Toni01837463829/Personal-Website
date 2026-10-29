@@ -1,5 +1,6 @@
 import { motion, useAnimationFrame, useInView, useMotionValue, useReducedMotion, useTransform } from 'motion/react'
 import { useRef, useState, type CSSProperties, type PointerEvent } from 'react'
+import { glow } from './glow'
 
 const SLOW = 40 // degrees per second when left alone
 const FAST = 220 // while hovered
@@ -115,8 +116,8 @@ export function Medal3D({ src, alt, height, ratio }: { src: string; alt: string;
       </motion.div>
       <motion.div
         aria-hidden
-        className="absolute bottom-0 left-1/2 h-3 -translate-x-1/2 rounded-[50%] bg-black/60 blur-md"
-        style={{ width: width * 0.9, scaleX: shadowScale }}
+        className="absolute left-1/2 h-18 -translate-x-1/2"
+        style={{ width: width * 0.9 + 60, bottom: -30, scaleX: shadowScale, background: glow('#000', 0.23) }}
       />
     </div>
   )
