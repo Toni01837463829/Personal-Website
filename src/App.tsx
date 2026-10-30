@@ -3,7 +3,7 @@ import { chapters, useActiveChapter } from './chapters'
 import { Cursor } from './components/Cursor'
 import { PointerProvider } from './components/Mouse'
 import { Nav } from './components/Nav'
-import { Particles } from './components/Particles'
+import { Backdrop } from './components/Backdrop'
 import { SectionBreak } from './components/SectionBreak'
 import { SectionNav } from './components/SectionNav'
 import { About } from './sections/About'
@@ -24,7 +24,7 @@ function ChapterFrame() {
 
   return (
     <>
-      <Particles accent={chapters[active].accent} />
+      <Backdrop accent={chapters[active].accent} />
       <motion.div
         style={{ scaleX: progress }}
         animate={{ backgroundImage: `linear-gradient(90deg, ${a}, ${b})` }}

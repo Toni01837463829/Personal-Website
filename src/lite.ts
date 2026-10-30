@@ -2,11 +2,10 @@ import { useSyncExternalStore } from 'react'
 
 // "Lite" mode for weak graphics chips, such as the ones built into most laptops (Intel UHD
 // and the like). Those draw the page's own elements just as well, but run out of breath
-// putting all the layers on top of each other every frame: the full-screen particle field,
-// frosted glass that has to blur whatever moves behind it, and the gliding logo wall. In
-// lite mode the html element gets the `lite` class (the `lite:` variant in index.css), the
-// particles only redraw a few times a second while left alone, glass is frosted without the
-// blur, and the logo wall stands still.
+// putting all the layers on top of each other every frame: frosted glass that has to blur
+// whatever moves behind it, and the gliding logo wall. In lite mode the html element gets the
+// `lite` class (the `lite:` variant in index.css), glass is frosted without the blur, and the
+// logo wall stands still.
 // It is switched on for chips known to be weak, or once the page turns out to stutter.
 // `?lite=1` and `?lite=0` force it either way, for trying it out.
 

@@ -420,8 +420,6 @@ function Expanded({
       role="dialog"
       aria-modal="true"
       aria-label={label}
-      // Covers the screen, so the particle field behind the blur can rest (see Particles.tsx)
-      data-opaque
       style={{ ...colorVars(colors), ...(dark && ({ '--accent-a': colors[0], '--accent-b': colors[1] } as CSSProperties)) }}
     >
       <motion.div

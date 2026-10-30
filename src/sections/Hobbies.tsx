@@ -51,7 +51,6 @@ export function Hobbies() {
     <section
       id="hobbys"
       ref={ref}
-      data-opaque
       style={{ ...accentVars('hobbys'), height: `${n * 100}svh` }}
       className="theme-dark relative overflow-clip"
     >
