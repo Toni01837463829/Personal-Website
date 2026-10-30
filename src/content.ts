@@ -43,16 +43,16 @@ export const hobbies: { id: HobbyId; name: string; text: string; colors: [string
     colors: ['#fc4c02', '#fbbf24'],
   },
   {
-    id: 'simracing',
-    name: 'Sim-Racing',
-    text: 'Viel zu viel Zeit verbracht, mittelgut zu werden.',
-    colors: ['#22c55e', '#0ea5e9'],
-  },
-  {
     id: 'feuerwehr',
     name: 'Freiwillige Feuerwehr',
     text: 'APTE: Bronze, APLE: Bronze. Erstellung und Hosting der Website der FF Pfaffenschlag.',
     colors: ['#ef4444', '#b91c1c'],
+  },
+  {
+    id: 'simracing',
+    name: 'Sim-Racing',
+    text: 'Viel zu viel Zeit verbracht, mittelgut zu werden.',
+    colors: ['#22c55e', '#0ea5e9'],
   },
   {
     id: 'coding',
