@@ -284,7 +284,8 @@ export function Portal({
 
           {(image || children) && (
             <motion.span
-              className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white/90 px-4 py-2 text-sm font-medium whitespace-nowrap text-ink shadow-[0_20px_40px_-15px_rgba(17,21,28,.45)]"
+              // On a dark portal the ink is light (theme-dark), so the pill turns dark with it
+              className={`absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap text-ink shadow-[0_20px_40px_-15px_rgba(17,21,28,.45)] ${dark ? 'border border-white/10 bg-[#0a0d12]/85' : 'bg-white/90'}`}
               initial={false}
               animate={{ opacity: open && !passing ? 1 : 0, y: open && !passing ? 0 : 8 }}
               transition={{ type: 'spring', stiffness: 260, damping: 24, delay: open ? 0.1 : 0 }}
